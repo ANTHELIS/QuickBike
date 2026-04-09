@@ -1,0 +1,335 @@
+.home-content {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  overflow: hidden;
+}
+
+/* ── Map Background ── */
+.home-map-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0a1628 0%, #0d2137 40%, #0f2b47 100%);
+}
+
+.home-map-grid {
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: mapDrift 20s linear infinite;
+}
+
+@keyframes mapDrift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-40px, -40px); }
+}
+
+/* ── Search Card ── */
+.home-search-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-elevated);
+}
+
+.home-search-card__title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-3);
+}
+
+.home-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.home-search-icon {
+  position: absolute;
+  left: var(--space-4);
+  color: var(--color-gray-400);
+  font-size: 1.1rem;
+  z-index: 1;
+}
+
+.home-search-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) 2.75rem;
+  background: var(--color-gray-100);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+  border: 1.5px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.home-search-input:focus {
+  background: var(--color-white);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-50);
+}
+
+.home-search-input::placeholder {
+  color: var(--color-gray-400);
+}
+
+/* Suggestions */
+.home-suggestions {
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: var(--space-2);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.home-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-2);
+  text-align: left;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.home-suggestion-item:hover {
+  background: var(--color-gray-50);
+}
+
+.home-suggestion-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+/* Shortcuts */
+.home-shortcuts {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.home-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-700);
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.home-shortcut:hover {
+  border-color: var(--color-primary-200);
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+}
+
+.home-shortcut--add {
+  border-style: dashed;
+  color: var(--color-gray-500);
+}
+
+/* ── Recent Places ── */
+.home-recents {
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.home-recents__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.home-recents__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.home-recent-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-gray-100);
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.home-recent-item:last-child {
+  border-bottom: none;
+}
+
+.home-recent-item:hover {
+  padding-left: var(--space-2);
+}
+
+.home-recent-item__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gray-500);
+  flex-shrink: 0;
+}
+
+.home-recent-item__name {
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  color: var(--color-gray-900);
+}
+
+.home-recent-item__address {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: 1px;
+}
+
+/* ── Promo Card ── */
+.home-promo {
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.home-promo::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  background: var(--color-primary-50);
+  border-radius: var(--radius-full);
+  opacity: 0.6;
+}
+
+.home-promo__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-2);
+  background: var(--color-error-light);
+  color: var(--color-error);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+
+.home-promo__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.home-promo__name {
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-900);
+}
+
+.home-promo__desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin-top: 2px;
+}
+
+.home-promo__price {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-gray-900);
+}
+
+/* ── Streak Card ── */
+.home-streak {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg, var(--color-gray-900) 0%, #1a2740 100%);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  color: var(--color-white);
+}
+
+.home-streak__label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.home-streak__text {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-top: var(--space-2);
+}
+
+/* ── Locate Button ── */
+.home-locate-btn {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-height) + 24px);
+  right: calc((100% - var(--max-width)) / 2 + 16px);
+  width: 48px;
+  height: 48px;
+  background: var(--color-white);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  color: var(--color-gray-700);
+  z-index: 10;
+  transition: all var(--transition-fast);
+}
+
+.home-locate-btn:hover {
+  background: var(--color-gray-50);
+  transform: scale(1.05);
+}
+
+@media (max-width: 430px) {
+  .home-locate-btn {
+    right: 16px;
+  }
+}

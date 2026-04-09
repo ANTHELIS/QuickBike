@@ -1,92 +1,105 @@
 const axios = require('axios');
 const captainModel = require('../models/captain.model');
+const config = require('../config');
+const AppError = require('../utils/AppError');
+const logger = require('../utils/logger');
 
+// ========================================================
+// 1. Geocoding — address → { ltd, lng }
+// ========================================================
 module.exports.getAddressCoordinate = async (address) => {
-    const apiKey = process.env.GOOGLE_MAPS_API;
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+    if (!address) throw new AppError('Address is required', 400);
 
-    try {
-        const response = await axios.get(url);
-        if (response.data.status === 'OK') {
-            const location = response.data.results[ 0 ].geometry.location;
-            return {
-                ltd: location.lat,
-                lng: location.lng
-            };
-        } else {
-            throw new Error('Unable to fetch coordinates');
-        }
-    } catch (error) {
-        console.error(error);
-        throw error;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${config.googleMapsApiKey}`;
+    const response = await axios.get(url, { timeout: 10000 });
+
+    if (response.data.status === 'OK' && response.data.results.length > 0) {
+        const location = response.data.results[0].geometry.location;
+        return { ltd: location.lat, lng: location.lng };
     }
-}
+    
+    logger.warn('Google geocoding failed', { address, status: response.data.status });
+    throw new AppError('Unable to fetch coordinates for this address', 404);
+};
 
+// ========================================================
+// 1b. Reverse Geocoding — { lat, lng } → readable address
+// ========================================================
+module.exports.reverseGeocode = async (lat, lng) => {
+    if (lat == null || lng == null) throw new AppError('Latitude and longitude are required', 400);
+
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${config.googleMapsApiKey}`;
+    const response = await axios.get(url, { timeout: 10000 });
+
+    if (response.data.status === 'OK' && response.data.results.length > 0) {
+        const result = response.data.results[0];
+        const components = result.address_components || [];
+        const get = (type) => components.find((c) => c.types.includes(type))?.long_name;
+        const parts = [
+            get('sublocality_level_1') || get('sublocality') || get('neighborhood'),
+            get('locality') || get('administrative_area_level_2'),
+            get('administrative_area_level_1'),
+        ].filter(Boolean);
+
+        return {
+            address: parts.length > 0 ? parts.join(', ') : result.formatted_address,
+            displayName: result.formatted_address,
+            lat,
+            lng,
+        };
+    }
+    throw new AppError('Unable to find address for these coordinates', 404);
+};
+
+// ========================================================
+// 2. Distance & Time — origin/dest → { distance, duration }
+// ========================================================
 module.exports.getDistanceTime = async (origin, destination) => {
-    if (!origin || !destination) {
-        throw new Error('Origin and destination are required');
+    if (!origin || !destination) throw new AppError('Origin and destination are required', 400);
+
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${config.googleMapsApiKey}`;
+    const response = await axios.get(url, { timeout: 10000 });
+
+    if (response.data.status !== 'OK') {
+        throw new AppError('Unable to fetch distance and time', 502);
     }
-
-    const apiKey = process.env.GOOGLE_MAPS_API;
-
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
-
-    try {
-
-
-        const response = await axios.get(url);
-        if (response.data.status === 'OK') {
-
-            if (response.data.rows[ 0 ].elements[ 0 ].status === 'ZERO_RESULTS') {
-                throw new Error('No routes found');
-            }
-
-            return response.data.rows[ 0 ].elements[ 0 ];
-        } else {
-            throw new Error('Unable to fetch distance and time');
-        }
-
-    } catch (err) {
-        console.error(err);
-        throw err;
+    const element = response.data.rows[0]?.elements[0];
+    if (!element || element.status === 'ZERO_RESULTS') {
+        throw new AppError('No routes found between these locations', 404);
     }
-}
+    return element;
+};
 
+// ========================================================
+// 3. Autocomplete — input → array of place strings
+// ========================================================
 module.exports.getAutoCompleteSuggestions = async (input) => {
-    if (!input) {
-        throw new Error('query is required');
+    if (!input) throw new AppError('Search query is required', 400);
+
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${config.googleMapsApiKey}`;
+    const response = await axios.get(url, { timeout: 10000 });
+
+    if (response.data.status === 'OK') {
+        return response.data.predictions.map((p) => p.description).filter(Boolean);
     }
+    throw new AppError('Unable to fetch suggestions', 502);
+};
 
-    const apiKey = process.env.GOOGLE_MAPS_API;
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
-
-    try {
-        const response = await axios.get(url);
-        if (response.data.status === 'OK') {
-            return response.data.predictions.map(prediction => prediction.description).filter(value => value);
-        } else {
-            throw new Error('Unable to fetch suggestions');
-        }
-    } catch (err) {
-        console.error(err);
-        throw err;
-    }
-}
-
-module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
-
-    // radius in km
-
-
-    const captains = await captainModel.find({
-        location: {
-            $geoWithin: {
-                $centerSphere: [ [ ltd, lng ], radius / 6371 ]
-            }
-        }
-    });
-
+// ========================================================
+// 4. Find captains within radius (MongoDB geospatial)
+// ========================================================
+module.exports.getCaptainsInTheRadius = async (lat, lng, radiusKm) => {
+    const captains = await captainModel.aggregate([
+        {
+            $geoNear: {
+                near: { type: 'Point', coordinates: [lng, lat] },
+                distanceField: 'distance',
+                maxDistance: radiusKm * 1000,
+                spherical: true,
+            },
+        },
+        { $match: { status: 'active' } },
+        { $project: { password: 0, __v: 0 } },
+    ]);
     return captains;
-
-
-}
+};

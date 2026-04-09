@@ -4,13 +4,14 @@ const blacklistTokenSchema = new mongoose.Schema({
     token: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true,
     },
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: 86400 // 24 hours in seconds
-    }
+        expires: 86400, // Auto-delete after 24 hours (matches JWT expiry)
+    },
 });
 
 module.exports = mongoose.model('BlacklistToken', blacklistTokenSchema);

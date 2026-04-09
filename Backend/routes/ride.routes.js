@@ -3,42 +3,82 @@ const router = express.Router();
 const { body, query } = require('express-validator');
 const rideController = require('../controllers/ride.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
+const asyncHandler = require('../utils/asyncHandler');
 
-
-router.post('/create',
+router.post(
+    '/create',
     authMiddleware.authUser,
-    body('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
-    body('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
-    body('vehicleType').isString().isIn([ 'auto', 'car', 'moto' ]).withMessage('Invalid vehicle type'),
-    rideController.createRide
-)
+    [
+        body('pickup').isString().trim().isLength({ min: 3 }).withMessage('Invalid pickup address'),
+        body('destination')
+            .isString()
+            .trim()
+            .isLength({ min: 3 })
+            .withMessage('Invalid destination address'),
+        body('vehicleType')
+            .isString()
+            .isIn(['auto', 'car', 'moto'])
+            .withMessage('Invalid vehicle type'),
+    ],
+    asyncHandler(rideController.createRide)
+);
 
-router.get('/get-fare',
+router.get(
+    '/get-fare',
     authMiddleware.authUser,
-    query('pickup').isString().isLength({ min: 3 }).withMessage('Invalid pickup address'),
-    query('destination').isString().isLength({ min: 3 }).withMessage('Invalid destination address'),
-    rideController.getFare
-)
+    [
+        query('pickup')
+            .isString()
+            .trim()
+            .isLength({ min: 3 })
+            .withMessage('Invalid pickup address'),
+        query('destination')
+            .isString()
+            .trim()
+            .isLength({ min: 3 })
+            .withMessage('Invalid destination address'),
+    ],
+    asyncHandler(rideController.getFare)
+);
 
-router.post('/confirm',
+router.post(
+    '/confirm',
     authMiddleware.authCaptain,
-    body('rideId').isMongoId().withMessage('Invalid ride id'),
-    rideController.confirmRide
-)
+    [body('rideId').isMongoId().withMessage('Invalid ride id')],
+    asyncHandler(rideController.confirmRide)
+);
 
-router.get('/start-ride',
+router.get(
+    '/start-ride',
     authMiddleware.authCaptain,
-    query('rideId').isMongoId().withMessage('Invalid ride id'),
-    query('otp').isString().isLength({ min: 6, max: 6 }).withMessage('Invalid OTP'),
-    rideController.startRide
-)
+    [
+        query('rideId').isMongoId().withMessage('Invalid ride id'),
+        query('otp')
+            .isString()
+            .isLength({ min: 6, max: 6 })
+            .withMessage('Invalid OTP'),
+    ],
+    asyncHandler(rideController.startRide)
+);
 
-router.post('/end-ride',
+router.post(
+    '/end-ride',
     authMiddleware.authCaptain,
-    body('rideId').isMongoId().withMessage('Invalid ride id'),
-    rideController.endRide
-)
+    [body('rideId').isMongoId().withMessage('Invalid ride id')],
+    asyncHandler(rideController.endRide)
+);
 
+// ── Ride History & Stats (supports both user and captain) ──
+router.get(
+    '/history',
+    authMiddleware.authAny,
+    asyncHandler(rideController.getRideHistory)
+);
 
+router.get(
+    '/stats',
+    authMiddleware.authAny,
+    asyncHandler(rideController.getUserStats)
+);
 
 module.exports = router;
