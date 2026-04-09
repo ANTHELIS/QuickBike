@@ -33,3 +33,14 @@ module.exports.getAutoCompleteSuggestions = async (req, res) => {
     const suggestions = await mapService.getAutoCompleteSuggestions(input);
     res.status(200).json(suggestions);
 };
+
+module.exports.reverseGeocode = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { lat, lng } = req.query;
+    const result = await mapService.reverseGeocode(parseFloat(lat), parseFloat(lng));
+    res.status(200).json(result);
+};

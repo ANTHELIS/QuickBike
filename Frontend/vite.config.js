@@ -7,17 +7,16 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Proxy Socket.io FIRST (order matters for ws upgrade)
+      // Socket.io WebSocket proxy (must be first)
       '/socket.io': {
         target: 'http://localhost:3000',
         changeOrigin: true,
         ws: true,
-        // Suppress noisy proxy errors in console
         configure: (proxy) => {
           proxy.on('error', () => {});
         },
       },
-      // Proxy API requests to backend
+      // API routes proxy
       '/users': {
         target: 'http://localhost:3000',
         changeOrigin: true,

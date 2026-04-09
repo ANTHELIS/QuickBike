@@ -37,4 +37,14 @@ router.get(
     asyncHandler(mapController.getAutoCompleteSuggestions)
 );
 
+router.get(
+    '/reverse-geocode',
+    authMiddleware.authUser,
+    [
+        query('lat').isFloat().withMessage('Latitude is required'),
+        query('lng').isFloat().withMessage('Longitude is required'),
+    ],
+    asyncHandler(mapController.reverseGeocode)
+);
+
 module.exports = router;

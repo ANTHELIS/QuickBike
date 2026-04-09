@@ -39,8 +39,6 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Index for email lookups
-userSchema.index({ email: 1 });
 
 userSchema.methods.generateAuthToken = function () {
     return jwt.sign({ _id: this._id }, config.jwt.secret, {

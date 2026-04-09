@@ -61,7 +61,7 @@ const captainSchema = new mongoose.Schema(
             vehicleType: {
                 type: String,
                 required: true,
-                enum: ['car', 'motorcycle', 'auto'],
+                enum: ['car', 'moto', 'auto'],
             },
         },
         location: {
@@ -82,7 +82,6 @@ const captainSchema = new mongoose.Schema(
 
 // 2dsphere index for geospatial queries — CRITICAL for production performance
 captainSchema.index({ 'location': '2dsphere' });
-captainSchema.index({ email: 1 });
 
 captainSchema.methods.generateAuthToken = function () {
     return jwt.sign({ _id: this._id }, config.jwt.secret, {
