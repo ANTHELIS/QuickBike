@@ -35,6 +35,18 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: null,
         },
+        phone: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        savedPlaces: [
+            {
+                label: { type: String, trim: true },   // e.g. "Home", "Work"
+                address: { type: String, trim: true },
+                icon: { type: String, default: 'home' },
+            },
+        ],
     },
     { timestamps: true }
 );

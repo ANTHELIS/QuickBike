@@ -47,4 +47,14 @@ router.get(
     asyncHandler(mapController.reverseGeocode)
 );
 
+router.get(
+    '/nearby-captains',
+    authMiddleware.authUser,
+    [
+        query('lat').isFloat().withMessage('Latitude is required'),
+        query('lng').isFloat().withMessage('Longitude is required'),
+    ],
+    asyncHandler(mapController.getNearbyCaptains)
+);
+
 module.exports = router;

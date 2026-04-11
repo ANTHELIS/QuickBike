@@ -1,10 +1,9 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { Route, Routes } from 'react-router'
 import Start from './pages/Start'
 import UserLogin from './pages/UserLogin'
 import UserSignup from './pages/UserSignup'
 import Captainlogin from './pages/Captainlogin'
-import CaptainSignup from './pages/CaptainSignup'
 import Home from './pages/Home'
 import UserProtectWrapper from './pages/UserProtectWrapper'
 import UserLogout from './pages/UserLogout'
@@ -13,43 +12,68 @@ import CaptainProtectWrapper from './pages/CaptainProtectWrapper'
 import CaptainLogout from './pages/CaptainLogout'
 import Riding from './pages/Riding'
 import CaptainRiding from './pages/CaptainRiding'
-import 'remixicon/fonts/remixicon.css'
+import UserRides from './pages/UserRides'
+import UserAccount from './pages/UserAccount'
+import CaptainAccount from './pages/CaptainAccount'
+
+// KYC Flow (captain)
+import KycLanding  from './pages/captain-kyc/KycLanding'
+import KycStep1    from './pages/captain-kyc/KycStep1'
+import KycStep2    from './pages/captain-kyc/KycStep2'
+import KycStep3    from './pages/captain-kyc/KycStep3'
+import KycStep4    from './pages/captain-kyc/KycStep4'
+import KycPending  from './pages/captain-kyc/KycPending'
+
+// Admin Panel
+import AdminLogin     from './pages/admin/AdminLogin'
+import AdminDashboard, { AdminLayout } from './pages/admin/AdminDashboard'
+import KycList        from './pages/admin/KycList'
+import KycDetail      from './pages/admin/KycDetail'
+import AdminCaptains  from './pages/admin/AdminCaptains'
+import AdminUsers     from './pages/admin/AdminUsers'
 
 const App = () => {
-
   return (
     <div>
       <Routes>
+        {/* Public */}
         <Route path='/' element={<Start />} />
         <Route path='/login' element={<UserLogin />} />
+        <Route path='/signup' element={<UserSignup />} />
+        <Route path='/captain-login' element={<Captainlogin />} />
+
+        {/* Active ride screens — no auth wrapper (state passed via navigate) */}
         <Route path='/riding' element={<Riding />} />
         <Route path='/captain-riding' element={<CaptainRiding />} />
 
-        <Route path='/signup' element={<UserSignup />} />
-        <Route path='/captain-login' element={<Captainlogin />} />
-        <Route path='/captain-signup' element={<CaptainSignup />} />
-        <Route path='/home'
-          element={
-            <UserProtectWrapper>
-              <Home />
-            </UserProtectWrapper>
-          } />
-        <Route path='/user/logout'
-          element={<UserProtectWrapper>
-            <UserLogout />
-          </UserProtectWrapper>
-          } />
-        <Route path='/captain-home' element={
-          <CaptainProtectWrapper>
-            <CaptainHome />
-          </CaptainProtectWrapper>
+        {/* User (Rider) protected routes */}
+        <Route path='/home' element={<UserProtectWrapper><Home /></UserProtectWrapper>} />
+        <Route path='/user/logout' element={<UserProtectWrapper><UserLogout /></UserProtectWrapper>} />
+        <Route path='/user/rides' element={<UserProtectWrapper><UserRides /></UserProtectWrapper>} />
+        <Route path='/user/account' element={<UserProtectWrapper><UserAccount /></UserProtectWrapper>} />
 
-        } />
-        <Route path='/captain/logout' element={
-          <CaptainProtectWrapper>
-            <CaptainLogout />
-          </CaptainProtectWrapper>
-        } />
+        {/* Captain (Driver) protected routes */}
+        <Route path='/captain-home' element={<CaptainProtectWrapper><CaptainHome /></CaptainProtectWrapper>} />
+        <Route path='/captain/logout' element={<CaptainProtectWrapper><CaptainLogout /></CaptainProtectWrapper>} />
+        <Route path='/captain/account' element={<CaptainProtectWrapper><CaptainAccount /></CaptainProtectWrapper>} />
+
+        {/* Captain KYC Flow — /captain/kyc is public (registration), steps need auth */}
+        <Route path='/captain/kyc' element={<KycLanding />} />
+        <Route path='/captain/kyc/step/1' element={<CaptainProtectWrapper><KycStep1 /></CaptainProtectWrapper>} />
+        <Route path='/captain/kyc/step/2' element={<CaptainProtectWrapper><KycStep2 /></CaptainProtectWrapper>} />
+        <Route path='/captain/kyc/step/3' element={<CaptainProtectWrapper><KycStep3 /></CaptainProtectWrapper>} />
+        <Route path='/captain/kyc/step/4' element={<CaptainProtectWrapper><KycStep4 /></CaptainProtectWrapper>} />
+        <Route path='/captain/kyc/pending' element={<CaptainProtectWrapper><KycPending /></CaptainProtectWrapper>} />
+
+        {/* Admin Panel */}
+        <Route path='/admin/login' element={<AdminLogin />} />
+        <Route path='/admin' element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path='kyc' element={<KycList />} />
+          <Route path='kyc/:id' element={<KycDetail />} />
+          <Route path='captains' element={<AdminCaptains />} />
+          <Route path='users' element={<AdminUsers />} />
+        </Route>
       </Routes>
     </div>
   )

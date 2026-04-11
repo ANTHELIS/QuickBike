@@ -12,10 +12,12 @@ const errorHandler = require('./middlewares/error.middleware');
 const { apiLimiter } = require('./middlewares/rateLimiter.middleware');
 const logger = require('./utils/logger');
 
-const userRoutes = require('./routes/user.routes');
+const userRoutes    = require('./routes/user.routes');
 const captainRoutes = require('./routes/captain.routes');
-const mapsRoutes = require('./routes/maps.routes');
-const rideRoutes = require('./routes/ride.routes');
+const mapsRoutes    = require('./routes/maps.routes');
+const rideRoutes    = require('./routes/ride.routes');
+const kycRoutes     = require('./routes/kyc.routes');
+const adminRoutes   = require('./routes/admin.routes');
 
 const app = express();
 
@@ -42,8 +44,8 @@ app.use(
 // ──────────────────────────────────────────────
 // 3. Body parsing with size limits
 // ──────────────────────────────────────────────
-app.use(express.json({ limit: '10kb' })); // Prevents large payload attacks
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
 // ──────────────────────────────────────────────
@@ -72,10 +74,13 @@ app.get('/health', (req, res) => {
 // ──────────────────────────────────────────────
 // 7. API routes
 // ──────────────────────────────────────────────
-app.use('/users', userRoutes);
-app.use('/captains', captainRoutes);
-app.use('/maps', mapsRoutes);
-app.use('/rides', rideRoutes);
+app.use('/users',     userRoutes);
+app.use('/captains',  captainRoutes);
+app.use('/maps',      mapsRoutes);
+app.use('/rides',     rideRoutes);
+app.use('/kyc',       kycRoutes);
+app.use('/api/admin', adminRoutes);
+
 
 // ──────────────────────────────────────────────
 // 8. 404 handler

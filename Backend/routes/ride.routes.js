@@ -68,6 +68,31 @@ router.post(
     asyncHandler(rideController.endRide)
 );
 
+// User or Captain cancels a ride
+router.post(
+    '/:rideId/cancel',
+    authMiddleware.authAny,
+    asyncHandler(rideController.cancelRide)
+);
+
+// Post-ride mutual rating (both user and captain can call)
+router.post(
+    '/:rideId/rate',
+    authMiddleware.authAny,
+    [
+        body('rating').isFloat({ min: 1, max: 5 }).withMessage('Rating must be 1–5'),
+        body('feedback').optional().isString(),
+    ],
+    asyncHandler(rideController.rateRide)
+);
+
+// Promo code validation
+router.get(
+    '/promo/:code',
+    authMiddleware.authUser,
+    asyncHandler(rideController.validatePromo)
+);
+
 // ── Ride History & Stats (supports both user and captain) ──
 router.get(
     '/history',

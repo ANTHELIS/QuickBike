@@ -10,7 +10,15 @@ router.post(
     '/register',
     authLimiter,
     [
-        body('email').isEmail().normalizeEmail().withMessage('Invalid Email'),
+        body('phone')
+            .trim()
+            .matches(/^[0-9]{10}$/)
+            .withMessage('Phone must be a valid 10-digit number'),
+        body('email')
+            .optional({ nullable: true, checkFalsy: true })
+            .isEmail()
+            .normalizeEmail()
+            .withMessage('Invalid Email'),
         body('fullname.firstname')
             .trim()
             .isLength({ min: 3 })
@@ -40,7 +48,15 @@ router.post(
     '/login',
     authLimiter,
     [
-        body('email').isEmail().normalizeEmail().withMessage('Invalid Email'),
+        body('phone')
+            .optional({ nullable: true, checkFalsy: true })
+            .matches(/^[0-9]{10}$/)
+            .withMessage('Invalid phone number'),
+        body('email')
+            .optional({ nullable: true, checkFalsy: true })
+            .isEmail()
+            .normalizeEmail()
+            .withMessage('Invalid Email'),
         body('password')
             .isLength({ min: 6 })
             .withMessage('Password must be at least 6 characters long'),
@@ -58,6 +74,16 @@ router.post(
     '/logout',
     authMiddleware.authCaptain,
     asyncHandler(captainController.logoutCaptain)
+);
+
+// Captain updates their own online/offline status
+router.patch(
+    '/status',
+    authMiddleware.authCaptain,
+    [
+        body('status').isIn(['active', 'inactive']).withMessage('Status must be active or inactive'),
+    ],
+    asyncHandler(captainController.updateStatus)
 );
 
 module.exports = router;

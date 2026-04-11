@@ -1,0 +1,14 @@
+.cr-content { padding: 8px 24px 28px; }
+.cr-title { margin-bottom: 20px; }
+.cr-vehicle-badge { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+.cr-vehicle-icon { font-size: 2rem; }
+.cr-route { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
+.cr-route-item { display: flex; align-items: flex-start; gap: 14px; }
+.cr-route-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.cr-route-text { flex: 1; }
+.cr-route-text .label-md { color: var(--on-surface-variant); display: block; margin-bottom: 2px; }
+.cr-route-text .body-md { color: var(--on-surface); }
+.cr-route-line { width: 2px; height: 20px; background: var(--outline-variant); margin-left: 4px; border-radius: 1px; }
+.cr-fare { margin-bottom: 24px; }
+.cr-fare-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+.cr-confirm { padding: 18px; }

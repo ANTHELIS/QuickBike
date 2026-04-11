@@ -1,0 +1,122 @@
+.start-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #fff8f5 0%, #feeade 50%, #f8e5d8 100%);
+  position: relative;
+}
+
+.start-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(135deg, #904d00 0%, #E67E00 60%, #ffb77d 100%);
+  clip-path: ellipse(120% 100% at 50% 0%);
+  z-index: 0;
+}
+
+.start-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  padding-top: 56px;
+}
+
+/* Logo */
+.start-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 64px;
+}
+.logo-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(8px);
+}
+.logo-text {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+/* Hero */
+.start-hero {
+  margin-bottom: 40px;
+}
+.start-title {
+  color: white;
+  margin-bottom: 16px;
+  font-size: 3rem;
+  line-height: 1.05;
+}
+.text-gradient {
+  background: linear-gradient(135deg, #ffdcc3, #ffb77d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.start-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 320px;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+/* Feature pills */
+.start-features {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: auto;
+  padding-bottom: 40px;
+}
+.feature-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+/* Actions */
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 40px;
+}
+.start-cta {
+  font-size: 1.0625rem;
+  padding: 18px 32px;
+}
+
+/* Decoration */
+.start-decoration {
+  position: absolute;
+  bottom: -100px;
+  right: -60px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 126, 0, 0.08) 0%, transparent 70%);
+  z-index: 0;
+}

@@ -22,7 +22,7 @@ const UserLogin = () => {
       if (response.status === 200) {
         const data = response.data
         setUser(data.user)
-        localStorage.setItem('token', data.token)
+        localStorage.setItem('user_token', data.token)
         navigate('/home')
       }
     } catch (err) {
@@ -33,82 +33,88 @@ const UserLogin = () => {
   }
 
   return (
-    <div className="screen" style={{ display: 'flex', flexDirection: 'column', background: 'var(--surface)' }}>
-      {/* Header */}
-      <div style={{ padding: '48px 24px 0' }}>
-        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--on-surface-variant)', marginBottom: '40px' }}>
-          <i className="ri-arrow-left-line" style={{ fontSize: '1.25rem' }}></i>
-          <span className="body-md">Back</span>
-        </Link>
+    <div className="bg-gray-100 min-h-screen flex justify-center font-['Inter']">
+      <main className="w-full max-w-[390px] min-h-[100dvh] bg-white shadow-xl relative overflow-x-hidden flex flex-col bg-[linear-gradient(180deg,rgba(255,255,255,1)_0%,rgba(255,248,245,1)_100%)]">
+        
+        {/* Header */}
+        <header className="flex items-center gap-4 px-6 py-4 bg-transparent pt-8">
+          <Link to="/" className="text-orange-600 hover:bg-orange-50 p-2 rounded-full transition-colors -ml-2">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </Link>
+        </header>
 
-        <h1 className="headline-lg" style={{ marginBottom: '8px' }}>
-          Welcome back<span style={{ color: 'var(--primary-container)' }}>.</span>
-        </h1>
-        <p className="body-md" style={{ color: 'var(--on-surface-variant)' }}>
-          Sign in to continue your journey
-        </p>
-      </div>
-
-      {/* Form */}
-      <form onSubmit={submitHandler} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '40px 24px 0' }}>
-        {error && (
-          <div className="animate-fade-in" style={{ padding: '12px 16px', background: 'var(--error-container)', borderRadius: 'var(--radius-md)', marginBottom: '20px', fontSize: '0.875rem', color: 'var(--error)' }}>
-            {error}
+        {/* Main Content */}
+        <section className="px-6 flex-grow flex flex-col justify-center pb-12">
+          
+          <div className="mb-10 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-gradient-to-tr from-[#A85300] to-[#F5820D] rounded-[20px] flex justify-center items-center shadow-lg shadow-orange-200 mb-6 rotate-3">
+              <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
+                <path d="M18 10L24 14V22L18 26L12 22V14L18 10Z" fill="white" />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-extrabold text-gray-900 font-['Manrope'] mb-2">Welcome Back</h1>
+            <p className="text-sm text-gray-500">Sign in to your QuickBike account</p>
           </div>
-        )}
 
-        <div className="input-group">
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            className="input-field"
-            type="email"
-            required
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg flex items-center gap-3 animate-fade-in">
+              <i className="fa-solid fa-circle-exclamation text-red-500"></i>
+              <span className="text-sm font-semibold text-red-800">{error}</span>
+            </div>
+          )}
 
-        <div className="input-group">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            className="input-field"
-            type="password"
-            required
-            placeholder="Your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+          <form onSubmit={submitHandler} className="space-y-5">
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">Email Address</label>
+              <input
+                type="email"
+                className="w-full bg-white border border-gray-200 rounded-xl py-4 px-4 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#F5820D] focus:border-transparent transition-all shadow-sm"
+                placeholder="you@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        <div style={{ flex: 1 }} />
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">Password</label>
+              <input
+                type="password"
+                className="w-full bg-white border border-gray-200 rounded-xl py-4 px-4 text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#F5820D] focus:border-transparent transition-all shadow-sm"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
 
-        <div style={{ paddingBottom: '32px' }}>
-          <button
-            type="submit"
-            className="btn btn-primary btn-lg"
-            disabled={loading}
-            style={{ opacity: loading ? 0.7 : 1 }}
-          >
-            {loading ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <i className="ri-loader-4-line" style={{ animation: 'spin 1s linear infinite' }}></i>
-                Signing in...
-              </span>
-            ) : 'Sign In'}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[#A85300] to-[#F5820D] py-4 rounded-full text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-200 active:scale-95 transition-all mt-8 disabled:opacity-70"
+            >
+              {loading ? (
+                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
 
-          <p className="body-md" style={{ textAlign: 'center', marginTop: '20px', color: 'var(--on-surface-variant)' }}>
-            New to QuickBike? <Link to="/signup" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>Create account</Link>
-          </p>
-        </div>
-      </form>
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600 font-medium">
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-[#A85300] font-bold hover:underline">
+                Create one
+              </Link>
+            </p>
+          </div>
+        </section>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
+      </main>
     </div>
   )
 }

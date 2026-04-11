@@ -20,11 +20,20 @@ const captainSchema = new mongoose.Schema(
         },
         email: {
             type: String,
-            required: true,
+            required: false,
             unique: true,
+            sparse: true,   // allows multiple null values
             lowercase: true,
             trim: true,
             match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
+            default: null,
+        },
+        phone: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            match: [/^[0-9]{10}$/, 'Please enter a valid 10-digit phone number'],
         },
         password: {
             type: String,
@@ -75,6 +84,15 @@ const captainSchema = new mongoose.Schema(
                 type: [Number], // [longitude, latitude]
                 default: [0, 0],
             },
+        },
+        kycStatus: {
+            type: String,
+            enum: ['none', 'pending', 'approved', 'rejected'],
+            default: 'none',
+        },
+        isVerified: {
+            type: Boolean,
+            default: false,
         },
     },
     { timestamps: true }

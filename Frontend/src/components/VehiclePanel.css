@@ -1,0 +1,20 @@
+.vp-content { padding: 8px 24px 28px; }
+.vp-title { margin-bottom: 20px; color: var(--on-surface); }
+.vp-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.vp-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px; background: var(--surface-container-lowest);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+}
+.vp-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.vp-card:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
+.vp-card-icon { font-size: 2rem; width: 48px; text-align: center; }
+.vp-card-info { flex: 1; min-width: 0; }
+.vp-card-header { display: flex; align-items: center; gap: 8px; }
+.vp-capacity { display: flex; align-items: center; gap: 3px; color: var(--on-surface-variant); }
+.vp-desc { color: var(--on-surface-variant); margin-top: 2px; }
+.vp-card-price { color: var(--primary); white-space: nowrap; font-weight: 700; }
+.vp-info { margin-top: 4px; }
+.vp-info-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }

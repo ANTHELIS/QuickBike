@@ -89,6 +89,7 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
 // 4. Find captains within radius (MongoDB geospatial)
 // ========================================================
 module.exports.getCaptainsInTheRadius = async (lat, lng, radiusKm) => {
+    // Primary: geospatial query — only active captains with real coordinates
     const captains = await captainModel.aggregate([
         {
             $geoNear: {
@@ -96,10 +97,25 @@ module.exports.getCaptainsInTheRadius = async (lat, lng, radiusKm) => {
                 distanceField: 'distance',
                 maxDistance: radiusKm * 1000,
                 spherical: true,
+                query: {
+                    status: 'active',
+                    // Exclude captains still at the default [0, 0] coordinates
+                    'location.coordinates': { $ne: [0, 0] },
+                },
             },
         },
-        { $match: { status: 'active' } },
         { $project: { password: 0, __v: 0 } },
     ]);
-    return captains;
+
+    if (captains.length > 0) return captains;
+
+    // Fallback: if geo query found nothing, return any active online captain
+    // that has a real location (socketId present = recently connected)
+    const fallback = await captainModel.find({
+        status: 'active',
+        socketId: { $ne: null },
+        'location.coordinates': { $ne: [0, 0] },
+    }).select('-password -__v').limit(10);
+
+    return fallback;
 };

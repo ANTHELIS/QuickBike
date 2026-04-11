@@ -10,28 +10,44 @@ module.exports.registerCaptain = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { fullname, email, password, vehicle } = req.body;
+    const { fullname, email, phone, password, vehicle } = req.body;
 
-    const existingCaptain = await captainModel.findOne({ email });
-    if (existingCaptain) {
-        throw new AppError('Captain with this email already exists', 409);
+    // Check duplicate phone
+    const phoneExists = await captainModel.findOne({ phone });
+    if (phoneExists) throw new AppError('Phone number already registered', 409);
+
+    // Check duplicate email only if provided
+    if (email) {
+        const emailExists = await captainModel.findOne({ email });
+        if (emailExists) throw new AppError('Email already registered', 409);
     }
 
     const hashedPassword = await captainModel.hashPassword(password);
 
-    const captain = await captainService.createCaptain({
-        firstname: fullname.firstname,
-        lastname: fullname.lastname,
-        email,
-        password: hashedPassword,
-        color: vehicle.color,
-        plate: vehicle.plate,
-        capacity: vehicle.capacity,
-        vehicleType: vehicle.vehicleType,
-    });
+    let captain;
+    try {
+        captain = await captainService.createCaptain({
+            firstname: fullname.firstname,
+            lastname:  fullname.lastname,
+            email:     email || null,
+            phone,
+            password:  hashedPassword,
+            color:     vehicle.color,
+            plate:     vehicle.plate,
+            capacity:  vehicle.capacity,
+            vehicleType: vehicle.vehicleType,
+        });
+    } catch (dbErr) {
+        // Handle MongoDB unique constraint violation (E11000)
+        if (dbErr.code === 11000) {
+            const field = Object.keys(dbErr.keyPattern || {})[0] || 'field';
+            const label = field === 'phone' ? 'Phone number' : field === 'email' ? 'Email' : 'Number plate';
+            return res.status(409).json({ message: `${label} is already registered` });
+        }
+        throw dbErr; // re-throw unexpected errors
+    }
 
     const token = captain.generateAuthToken();
-
     res.status(201).json({ token, captain });
 };
 
@@ -41,16 +57,22 @@ module.exports.loginCaptain = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { email, phone, password } = req.body;
 
-    const captain = await captainModel.findOne({ email }).select('+password');
+    if (!email && !phone) {
+        throw new AppError('Email or phone number is required', 400);
+    }
+
+    // Login by phone (preferred) or email
+    const query = phone ? { phone } : { email };
+    const captain = await captainModel.findOne(query).select('+password');
     if (!captain) {
-        throw new AppError('Invalid email or password', 401);
+        throw new AppError('Invalid credentials', 401);
     }
 
     const isMatch = await captain.comparePassword(password);
     if (!isMatch) {
-        throw new AppError('Invalid email or password', 401);
+        throw new AppError('Invalid credentials', 401);
     }
 
     const token = captain.generateAuthToken();
@@ -78,4 +100,14 @@ module.exports.logoutCaptain = async (req, res) => {
 
     res.clearCookie('token');
     res.status(200).json({ message: 'Logout successfully' });
+};
+
+module.exports.updateStatus = async (req, res) => {
+    const { status } = req.body;
+    const captain = req.captain;
+
+    captain.status = status;
+    await captain.save();
+
+    res.status(200).json({ message: `Status updated to ${status}`, status });
 };

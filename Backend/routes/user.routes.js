@@ -36,6 +36,21 @@ router.post(
 
 router.get('/profile', authMiddleware.authUser, asyncHandler(userController.getUserProfile));
 
+router.patch(
+    '/profile',
+    authMiddleware.authUser,
+    [
+        body('firstname').optional().trim().isLength({ min: 3 }).withMessage('First name too short'),
+        body('lastname').optional().trim(),
+        body('phone').optional().trim().isMobilePhone().withMessage('Invalid phone number'),
+    ],
+    asyncHandler(userController.updateProfile)
+);
+
 router.post('/logout', authMiddleware.authUser, asyncHandler(userController.logoutUser));
+
+router.get('/saved-places', authMiddleware.authUser, asyncHandler(userController.getSavedPlaces));
+router.post('/saved-places', authMiddleware.authUser, asyncHandler(userController.upsertSavedPlace));
+router.delete('/saved-places/:label', authMiddleware.authUser, asyncHandler(userController.deleteSavedPlace));
 
 module.exports = router;

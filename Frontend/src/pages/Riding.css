@@ -1,0 +1,14 @@
+.riding-page { position: relative; height: 100vh; overflow: hidden; }
+.riding-panel {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 20;
+  background: var(--surface); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: 0 -4px 32px rgba(35, 26, 18, 0.08);
+}
+.riding-content { padding: 8px 24px 28px; }
+.riding-eta { margin-bottom: 20px; }
+.riding-driver { margin-bottom: 20px; }
+.riding-avatar {
+  width: 48px; height: 48px; border-radius: var(--radius-full);
+  background: var(--surface-container); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+.riding-actions { display: flex; gap: 8px; }
