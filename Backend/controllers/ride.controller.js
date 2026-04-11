@@ -5,13 +5,17 @@ const { sendMessageToSocketId } = require('../socket');
 const rideModel = require('../models/ride.model');
 const userModel = require('../models/user.model');
 const captainModel = require('../models/captain.model');
+const { success, paginated } = require('../utils/response');
 const logger = require('../utils/logger');
 const AppError = require('../utils/AppError');
 
+// ─────────────────────────────────────────────────
+// POST /rides/create
+// ─────────────────────────────────────────────────
 module.exports.createRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { pickup, destination, vehicleType } = req.body;
@@ -35,26 +39,32 @@ module.exports.createRide = async (req, res) => {
             const captainsInRadius = await mapService.getCaptainsInTheRadius(
                 pickupCoordinates.ltd,
                 pickupCoordinates.lng,
-                5 // Increased radius to 5km for better captain discovery
+                5 // 5km initial radius
             );
 
             const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
 
+            let notifiedCount = 0;
             for (const captain of captainsInRadius) {
-                if (captain.socketId) {
+                // Only notify KYC-approved captains
+                if (captain.socketId && captain.kycStatus === 'approved') {
                     sendMessageToSocketId(captain.socketId, {
                         event: 'new-ride',
                         data: rideWithUser,
                     });
+                    notifiedCount++;
                 }
             }
 
-            logger.debug('Notified captains about new ride', {
+            logger.info('Notified captains about new ride', {
+                requestId: req.requestId,
                 rideId: ride._id,
-                captainsNotified: captainsInRadius.length,
+                captainsFound: captainsInRadius.length,
+                captainsNotified: notifiedCount,
             });
         } catch (err) {
             logger.error('Failed to notify captains', {
+                requestId: req.requestId,
                 rideId: ride._id,
                 error: err.message,
             });
@@ -62,64 +72,74 @@ module.exports.createRide = async (req, res) => {
     });
 };
 
+// ─────────────────────────────────────────────────
+// GET /rides/get-fare
+// ─────────────────────────────────────────────────
 module.exports.getFare = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { pickup, destination } = req.query;
     const fare = await rideService.getFare(pickup, destination);
+
+    // Return in the same format the frontend expects
     res.status(200).json(fare);
 };
 
+// ─────────────────────────────────────────────────
+// POST /rides/confirm — Captain confirms a ride
+// ─────────────────────────────────────────────────
 module.exports.confirmRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { rideId } = req.body;
     const ride = await rideService.confirmRide({ rideId, captain: req.captain });
 
-    // Fetch ride WITH OTP so we can send it to the user via socket
-    const rideWithOtp = await rideModel
-        .findById(ride._id)
-        .select('+otp')
-        .populate('user')
-        .populate('captain');
-
-    if (rideWithOtp?.user?.socketId) {
-        logger.info('Emitting ride-confirmed to user', { socketId: rideWithOtp.user.socketId, rideId: ride._id })
-        // Include OTP in the socket event so the user can see it to share with captain
-        sendMessageToSocketId(rideWithOtp.user.socketId, {
+    // Emit to user via socket — includes OTP for display
+    if (ride?.user?.socketId) {
+        logger.info('Emitting ride-confirmed to user', {
+            requestId: req.requestId,
+            socketId: ride.user.socketId,
+            rideId: ride._id,
+        });
+        sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-confirmed',
-            data: {
-                ...rideWithOtp.toObject(),
-                // OTP is explicitly included here for the user's OTP display
-            },
+            data: ride.toObject(), // OTP is included (select +otp was in service)
         });
     } else {
-        logger.warn('User has no socketId to receive ride-confirmed', { rideId: ride._id, user: rideWithOtp?.user?._id })
+        logger.warn('User has no socketId to receive ride-confirmed', {
+            requestId: req.requestId,
+            rideId: ride._id,
+            userId: ride?.user?._id,
+        });
     }
 
-    // Return ride WITHOUT OTP to captain (captain must get OTP from user)
+    // Return ride WITHOUT OTP to captain
     const rideResponse = ride.toObject();
     delete rideResponse.otp;
     res.status(200).json(rideResponse);
 };
 
+// ─────────────────────────────────────────────────
+// GET /rides/start-ride — Captain starts ride with OTP
+// ─────────────────────────────────────────────────
 module.exports.startRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { rideId, otp } = req.query;
-    logger.debug('startRide attempt', { rideId, otpReceived: otp });
+    logger.debug('startRide attempt', { requestId: req.requestId, rideId, otpReceived: otp });
 
     const ride = await rideService.startRide({ rideId, otp, captain: req.captain });
 
+    // Notify user that ride has started
     if (ride.user?.socketId) {
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-started',
@@ -130,16 +150,19 @@ module.exports.startRide = async (req, res) => {
     res.status(200).json(ride);
 };
 
+// ─────────────────────────────────────────────────
+// POST /rides/end-ride — Captain ends ride
+// ─────────────────────────────────────────────────
 module.exports.endRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { rideId } = req.body;
     const ride = await rideService.endRide({ rideId, captain: req.captain });
 
-    // Notify user that ride has ended so they can navigate to home
+    // Notify user that ride has ended
     if (ride.user?.socketId) {
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-ended',
@@ -150,61 +173,68 @@ module.exports.endRide = async (req, res) => {
     res.status(200).json(ride);
 };
 
-// POST /rides/:rideId/cancel — user or captain cancels an ongoing/accepted/pending ride
+// ─────────────────────────────────────────────────
+// POST /rides/:rideId/cancel
+// ─────────────────────────────────────────────────
 module.exports.cancelRide = async (req, res) => {
     const { rideId } = req.params;
+    const { reason } = req.body;
 
-    let ride;
-    let cancelledBy = '';
+    let cancelledBy, userId, captainId;
 
     if (req.captain) {
-        ride = await rideModel.findOne({ _id: rideId, captain: req.captain._id });
         cancelledBy = 'captain';
+        captainId = req.captain._id;
     } else if (req.user) {
-        ride = await rideModel.findOne({ _id: rideId, user: req.user._id });
         cancelledBy = 'user';
+        userId = req.user._id;
     } else {
         throw new AppError('Authentication required', 401);
     }
 
-    if (!ride) {
-        throw new AppError('Ride not found', 404);
+    const ride = await rideService.cancelRide({
+        rideId,
+        cancelledBy,
+        userId,
+        captainId,
+        reason,
+    });
+
+    // Notify the OTHER party via socket
+    if (cancelledBy === 'user' && ride.captain?.socketId) {
+        sendMessageToSocketId(ride.captain.socketId, {
+            event: 'ride-cancelled',
+            data: {
+                rideId: ride._id,
+                cancelledBy: 'user',
+                reason: reason || 'User cancelled the ride',
+            },
+        });
+    } else if (cancelledBy === 'captain' && ride.user?.socketId) {
+        sendMessageToSocketId(ride.user.socketId, {
+            event: 'ride-cancelled',
+            data: {
+                rideId: ride._id,
+                cancelledBy: 'captain',
+                reason: reason || 'Captain cancelled the ride',
+            },
+        });
     }
 
-    if (!['pending', 'accepted', 'ongoing'].includes(ride.status)) {
-        throw new AppError('Ride cannot be cancelled at this stage', 400);
-    }
-
-    ride.status = 'cancelled';
-    await ride.save();
-
-    // Notify the other party
-    if (cancelledBy === 'user' && ride.captain) {
-        const captainDoc = await captainModel.findById(ride.captain);
-        if (captainDoc?.socketId) {
-            sendMessageToSocketId(captainDoc.socketId, {
-                event: 'ride-cancelled',
-                data: { rideId: ride._id, cancelledBy: 'user' },
-            });
-        }
-    } else if (cancelledBy === 'captain' && ride.user) {
-        const userDoc = await userModel.findById(ride.user);
-        if (userDoc?.socketId) {
-            sendMessageToSocketId(userDoc.socketId, {
-                event: 'ride-cancelled',
-                data: { rideId: ride._id, cancelledBy: 'captain' },
-            });
-        }
-    }
-
-    res.status(200).json({ message: 'Ride cancelled', ride });
+    res.status(200).json({
+        message: 'Ride cancelled',
+        ride,
+        cancellationFee: ride.cancellationFee || 0,
+    });
 };
 
-// ── Ride History (for Activity page) ──
+// ─────────────────────────────────────────────────
+// GET /rides/history — Paginated ride history
+// ─────────────────────────────────────────────────
 module.exports.getRideHistory = async (req, res) => {
     const { userType } = req.query;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50); // cap at 50
     const status = req.query.status;
 
     let filter = {};
@@ -224,7 +254,7 @@ module.exports.getRideHistory = async (req, res) => {
     const [rides, total] = await Promise.all([
         rideModel
             .find(filter)
-            .populate('captain', 'fullname vehicle')
+            .populate('captain', 'fullname vehicle ratings')
             .populate('user', 'fullname email')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -233,18 +263,12 @@ module.exports.getRideHistory = async (req, res) => {
         rideModel.countDocuments(filter),
     ]);
 
-    res.status(200).json({
-        rides,
-        pagination: {
-            page,
-            limit,
-            total,
-            pages: Math.ceil(total / limit),
-        },
-    });
+    return paginated(res, { data: rides, total, page, limit });
 };
 
-// ── User/Captain Stats ──
+// ─────────────────────────────────────────────────
+// GET /rides/stats
+// ─────────────────────────────────────────────────
 module.exports.getUserStats = async (req, res) => {
     const { userType } = req.query;
 
@@ -278,26 +302,28 @@ module.exports.getUserStats = async (req, res) => {
                 { $match: { ...todayFilter, status: 'completed' } },
                 { $group: { _id: null, total: { $sum: '$fare' } } },
             ]),
-            // Average rating from completed, rated rides
             rideModel.aggregate([
                 { $match: { ...filter, status: 'completed', [ratingField.slice(1)]: { $exists: true } } },
                 { $group: { _id: null, avg: { $avg: ratingField } } },
             ]),
         ]);
 
-    res.status(200).json({
-        totalRides,
-        completedRides,
-        cancelledRides,
-        totalSpent: totalSpentAgg[0]?.total || 0,
-        todayRides,
-        todayEarnings: todayEarningsAgg[0]?.total || 0,
-        rating: ratingAgg[0]?.avg ? parseFloat(ratingAgg[0].avg.toFixed(1)) : null,
+    return success(res, {
+        data: {
+            totalRides,
+            completedRides,
+            cancelledRides,
+            totalSpent: totalSpentAgg[0]?.total || 0,
+            todayRides,
+            todayEarnings: todayEarningsAgg[0]?.total || 0,
+            rating: ratingAgg[0]?.avg ? parseFloat(ratingAgg[0].avg.toFixed(1)) : null,
+        },
     });
 };
 
-// ── POST /rides/:rideId/rate ──
-// Either the rider (userRating) or the captain (captainRating) can call this once.
+// ─────────────────────────────────────────────────
+// POST /rides/:rideId/rate
+// ─────────────────────────────────────────────────
 module.exports.rateRide = async (req, res) => {
     const { rideId } = req.params;
     const { rating, feedback } = req.body;
@@ -318,25 +344,46 @@ module.exports.rateRide = async (req, res) => {
     }
 
     if (isUser) {
-        if (ride.captainRating) throw new AppError('User has already rated this ride', 400);
-        ride.captainRating = rating; // user rates the captain
+        if (ride.captainRating) throw new AppError('Already rated', 400);
+        ride.captainRating = rating;
         if (feedback) ride.captainFeedback = feedback;
+
+        // Update captain's aggregate rating
+        try {
+            const captain = await captainModel.findById(ride.captain);
+            if (captain) await captain.addRating(rating);
+        } catch (err) {
+            logger.error('Failed to update captain rating', {
+                captainId: ride.captain,
+                error: err.message,
+            });
+        }
     } else {
-        if (ride.userRating) throw new AppError('Captain has already rated this ride', 400);
-        ride.userRating = rating; // captain rates the user
+        if (ride.userRating) throw new AppError('Already rated', 400);
+        ride.userRating = rating;
         if (feedback) ride.userFeedback = feedback;
     }
 
     await ride.save();
-    res.status(200).json({ message: 'Rating submitted', ride });
+    return success(res, { message: 'Rating submitted', data: ride });
 };
 
-// ── GET /rides/promo/:code?fare=X ──
+// ─────────────────────────────────────────────────
+// GET /rides/promo/:code?fare=X
+// ─────────────────────────────────────────────────
 module.exports.validatePromo = async (req, res) => {
     const { code } = req.params;
     const fare = parseFloat(req.query.fare);
+    const vehicleType = req.query.vehicleType || 'moto';
+
     if (!fare || isNaN(fare)) throw new AppError('Invalid fare amount', 400);
 
-    const result = rideService.validatePromoCode(code, fare);
-    res.status(200).json(result);
+    const result = await rideService.validatePromoCode(
+        code,
+        fare,
+        req.user._id,
+        vehicleType
+    );
+
+    return success(res, { data: result });
 };

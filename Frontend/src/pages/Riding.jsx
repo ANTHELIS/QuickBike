@@ -12,14 +12,22 @@ const Riding = () => {
   const [showRating, setShowRating] = useState(false)
 
   // Listen for captain ending the ride → show rating screen
+  // Also handle ride-cancelled during an active ride
   useEffect(() => {
     if (!socket) return
     const handleRideEnded = () => {
       setShowRating(true) // intercept: show rating instead of immediately going home
     }
+    const handleRideCancelled = () => {
+      navigate('/home')
+    }
     socket.on('ride-ended', handleRideEnded)
-    return () => socket.off('ride-ended', handleRideEnded)
-  }, [socket])
+    socket.on('ride-cancelled', handleRideCancelled)
+    return () => {
+      socket.off('ride-ended', handleRideEnded)
+      socket.off('ride-cancelled', handleRideCancelled)
+    }
+  }, [socket, navigate])
 
   const handleRatingDone = () => navigate('/home')
 
@@ -79,6 +87,40 @@ const Riding = () => {
                 <div className="text-2xl font-black text-[#A85507]">₹{ride?.fare || '0'}</div>
               </div>
             </div>
+
+            {/* Fare Breakdown (if available from new API) */}
+            {ride?.fareBreakdown && (
+              <div className="mb-5 bg-gray-50 rounded-2xl p-4 space-y-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Fare Breakdown</p>
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>Base fare</span><span>₹{ride.fareBreakdown.base}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>Distance</span><span>₹{ride.fareBreakdown.distance}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>Time</span><span>₹{ride.fareBreakdown.time}</span>
+                </div>
+                {ride.fareBreakdown.nightCharge > 0 && (
+                  <div className="flex justify-between text-xs text-amber-600">
+                    <span>Night charge</span><span>₹{ride.fareBreakdown.nightCharge}</span>
+                  </div>
+                )}
+                {ride.fareBreakdown.surge > 0 && (
+                  <div className="flex justify-between text-xs text-orange-600">
+                    <span>Surge ({ride?.surgeMultiplier}x)</span><span>₹{ride.fareBreakdown.surge}</span>
+                  </div>
+                )}
+                {ride.fareBreakdown.discount > 0 && (
+                  <div className="flex justify-between text-xs text-green-600 font-semibold">
+                    <span>Discount</span><span>-₹{ride.fareBreakdown.discount}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm font-bold text-gray-900 pt-1 border-t border-gray-200 mt-1">
+                  <span>Total</span><span>₹{ride.fareBreakdown.total}</span>
+                </div>
+              </div>
+            )}
 
             {ride?.captain && (
               <div className="flex items-center justify-between mb-6">

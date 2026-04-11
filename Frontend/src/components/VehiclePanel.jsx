@@ -62,10 +62,12 @@ const VehiclePanel = ({ pickup, destination, fare, vehicleType, selectVehicle, s
     setPromoResult(null)
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/rides/promo/${promoCode.trim()}?fare=${fare[vehicleType]}`,
+        `${import.meta.env.VITE_BASE_URL}/rides/promo/${promoCode.trim()}?fare=${fare[vehicleType]}&vehicleType=${vehicleType}`,
         { headers: { Authorization: `Bearer ${localStorage.getItem('user_token')}` } }
       )
-      setPromoResult(res.data)
+      // Handle both old format and new envelope format ({ data: {...} })
+      const result = res.data?.data || res.data
+      setPromoResult(result)
     } catch (err) {
       setPromoError(err.response?.data?.message || 'Invalid promo code')
     } finally {

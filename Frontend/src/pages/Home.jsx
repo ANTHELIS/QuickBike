@@ -101,17 +101,36 @@ const Home = () => {
       setWaitingForDriver(false)
       navigate('/riding', { state: { ride: data } })
     })
-    socket.on('ride-cancelled', () => {
+    socket.on('ride-cancelled', (data) => {
       setVehicleFound(false)
       setWaitingForDriver(false)
       setVehiclePanel(false)
       setRide(null)
-      setToast('The captain cancelled the ride.')
+      const reason = data?.reason || 'The ride was cancelled.'
+      showToast(reason)
     })
+
+    // ── Ride State Sync — restore active ride on reconnect ──
+    socket.on('ride-state-sync', (data) => {
+      if (!data) return
+      setRide(data)
+      if (data.status === 'pending') {
+        setVehiclePanel(false)
+        setVehicleFound(true)
+        setWaitingForDriver(false)
+      } else if (data.status === 'accepted') {
+        setVehicleFound(false)
+        setWaitingForDriver(true)
+      } else if (data.status === 'ongoing') {
+        navigate('/riding', { state: { ride: data } })
+      }
+    })
+
     return () => {
       socket.off('ride-confirmed')
       socket.off('ride-started')
       socket.off('ride-cancelled')
+      socket.off('ride-state-sync')
     }
   }, [socket, navigate])
 

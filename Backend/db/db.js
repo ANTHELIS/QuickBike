@@ -5,9 +5,9 @@ const logger = require('../utils/logger');
 async function connectToDb() {
     try {
         await mongoose.connect(config.db.uri, {
-            // Connection pool tuning
-            maxPoolSize: 10,
-            minPoolSize: 2,
+            // Connection pool tuning from config
+            maxPoolSize: config.db.maxPoolSize,
+            minPoolSize: config.db.minPoolSize,
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
         });

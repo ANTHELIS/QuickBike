@@ -5,6 +5,11 @@ const rideController = require('../controllers/ride.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const asyncHandler = require('../utils/asyncHandler');
 
+// ─────────────────────────────────────────────────
+// User endpoints
+// ─────────────────────────────────────────────────
+
+// Create a ride (user only)
 router.post(
     '/create',
     authMiddleware.authUser,
@@ -23,6 +28,7 @@ router.post(
     asyncHandler(rideController.createRide)
 );
 
+// Get fare estimate (user only)
 router.get(
     '/get-fare',
     authMiddleware.authUser,
@@ -41,16 +47,22 @@ router.get(
     asyncHandler(rideController.getFare)
 );
 
+// ─────────────────────────────────────────────────
+// Captain endpoints — require KYC approval
+// ─────────────────────────────────────────────────
+
+// Confirm ride (captain with approved KYC only)
 router.post(
     '/confirm',
-    authMiddleware.authCaptain,
+    authMiddleware.authCaptainApproved,
     [body('rideId').isMongoId().withMessage('Invalid ride id')],
     asyncHandler(rideController.confirmRide)
 );
 
+// Start ride with OTP (captain with approved KYC only)
 router.get(
     '/start-ride',
-    authMiddleware.authCaptain,
+    authMiddleware.authCaptainApproved,
     [
         query('rideId').isMongoId().withMessage('Invalid ride id'),
         query('otp')
@@ -61,21 +73,26 @@ router.get(
     asyncHandler(rideController.startRide)
 );
 
+// End ride (captain with approved KYC only)
 router.post(
     '/end-ride',
-    authMiddleware.authCaptain,
+    authMiddleware.authCaptainApproved,
     [body('rideId').isMongoId().withMessage('Invalid ride id')],
     asyncHandler(rideController.endRide)
 );
 
-// User or Captain cancels a ride
+// ─────────────────────────────────────────────────
+// Shared endpoints (user OR captain)
+// ─────────────────────────────────────────────────
+
+// Cancel ride
 router.post(
     '/:rideId/cancel',
     authMiddleware.authAny,
     asyncHandler(rideController.cancelRide)
 );
 
-// Post-ride mutual rating (both user and captain can call)
+// Rate ride
 router.post(
     '/:rideId/rate',
     authMiddleware.authAny,
@@ -93,13 +110,14 @@ router.get(
     asyncHandler(rideController.validatePromo)
 );
 
-// ── Ride History & Stats (supports both user and captain) ──
+// Ride history (paginated)
 router.get(
     '/history',
     authMiddleware.authAny,
     asyncHandler(rideController.getRideHistory)
 );
 
+// Ride stats
 router.get(
     '/stats',
     authMiddleware.authAny,

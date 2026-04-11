@@ -83,7 +83,16 @@ const CaptainHome = () => {
     return () => clearInterval(locationInterval)
   }, [isOnline, emitCurrentLocation])
 
-  // Listen for new rides
+  // Heartbeat: keep captain presence alive (30s interval)
+  useEffect(() => {
+    if (!isOnline || !socket) return
+    const heartbeatInterval = setInterval(() => {
+      socket.emit('heartbeat', { timestamp: Date.now() })
+    }, 30000)
+    return () => clearInterval(heartbeatInterval)
+  }, [isOnline, socket])
+
+  // Listen for new rides + cancellations + ride-state-sync
   useEffect(() => {
     if (!socket) return
     const handleNewRide = (data) => {
@@ -97,13 +106,28 @@ const CaptainHome = () => {
       setConfirmRidePopupPanel(false)
       setRide(null)
     }
+
+    // Ride state sync on reconnect — restore captain's active ride UI
+    const handleRideStateSync = (data) => {
+      if (!data) return
+      setRide(data)
+      if (data.status === 'accepted') {
+        setRidePopupPanel(false)
+        setConfirmRidePopupPanel(true)
+      } else if (data.status === 'ongoing') {
+        navigate('/captain/riding', { state: { ride: data } })
+      }
+    }
+
     socket.on('new-ride', handleNewRide)
     socket.on('ride-cancelled', handleRideCancelled)
+    socket.on('ride-state-sync', handleRideStateSync)
     return () => {
       socket.off('new-ride', handleNewRide)
       socket.off('ride-cancelled', handleRideCancelled)
+      socket.off('ride-state-sync', handleRideStateSync)
     }
-  }, [socket, isOnline])
+  }, [socket, isOnline, navigate])
 
   // Load today's stats
   const fetchStats = useCallback(async () => {
@@ -114,7 +138,9 @@ const CaptainHome = () => {
         params: { userType: 'captain' },
         headers: authHeader()
       })
-      setStats(res.data)
+      // Handle both old format (direct) and new envelope format ({ data: {...} })
+      const statsData = res.data?.data || res.data
+      setStats(statsData)
     } catch {
       // stats failed silently
     } finally {
@@ -258,7 +284,7 @@ const CaptainHome = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
-                    4.8 ★
+                    {captain?.ratings?.average ? `${captain.ratings.average.toFixed(1)} ★` : '— ★'}
                   </div>
                 </div>
               </div>
