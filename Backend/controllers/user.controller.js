@@ -46,16 +46,23 @@ module.exports.loginUser = async (req, res) => {
 
     const { email, password } = req.body;
 
-    const user = await userModel.findOne({ email }).select('+password');
+    const user = await userModel.findOne({ email }).select('+password +loginAttempts +lockUntil');
     if (!user) {
         throw new AppError('Invalid email or password', 401);
     }
 
+    if (user.isLocked()) {
+        const minsLeft = Math.ceil((user.lockUntil - Date.now()) / 60000);
+        throw new AppError(`Account locked. Try again in ${minsLeft} minutes.`, 423);
+    }
+
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+        await user.incrementLoginAttempts();
         throw new AppError('Invalid email or password', 401);
     }
 
+    await user.resetLoginAttempts();
     const token = user.generateAuthToken();
 
     res.cookie('token', token, {

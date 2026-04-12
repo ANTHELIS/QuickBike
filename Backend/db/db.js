@@ -12,6 +12,14 @@ async function connectToDb() {
             socketTimeoutMS: 45000,
         });
         logger.info('Connected to MongoDB');
+
+        // Clear stranded socket connections from previous server runs / crashes
+        const userModel = require('../models/user.model');
+        const captainModel = require('../models/captain.model');
+        await Promise.all([
+            userModel.updateMany({}, { $set: { socketId: null } }),
+            captainModel.updateMany({}, { $set: { socketId: null } })
+        ]).catch(err => logger.warn('Failed to clear socket IDs on boot', { error: err.message }));
     } catch (err) {
         logger.error('MongoDB connection failed', { error: err.message });
         process.exit(1);

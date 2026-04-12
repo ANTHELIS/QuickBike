@@ -43,6 +43,8 @@ async function startServer() {
 
         // 3. Start background workers
         initRideLifecycleWorker();
+        const { startEarningsCron } = require('./jobs/earningsReset');
+        startEarningsCron();
         logger.info('Background workers started');
 
         // 4. Initialize Socket.io on the HTTP server

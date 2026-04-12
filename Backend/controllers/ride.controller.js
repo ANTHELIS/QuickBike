@@ -18,13 +18,14 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { pickup, destination, vehicleType } = req.body;
+    const { pickup, destination, vehicleType, promoCode } = req.body;
 
     const ride = await rideService.createRide({
         user: req.user._id,
         pickup,
         destination,
         vehicleType,
+        promoCode,
     });
 
     // Send response immediately without OTP
@@ -344,7 +345,9 @@ module.exports.rateRide = async (req, res) => {
     }
 
     if (isUser) {
-        if (ride.captainRating) throw new AppError('Already rated', 400);
+        if (ride.captainRating !== undefined && ride.captainRating !== null) {
+            throw new AppError('Already rated', 400);
+        }
         ride.captainRating = rating;
         if (feedback) ride.captainFeedback = feedback;
 
@@ -359,7 +362,9 @@ module.exports.rateRide = async (req, res) => {
             });
         }
     } else {
-        if (ride.userRating) throw new AppError('Already rated', 400);
+        if (ride.userRating !== undefined && ride.userRating !== null) {
+            throw new AppError('Already rated', 400);
+        }
         ride.userRating = rating;
         if (feedback) ride.userFeedback = feedback;
     }

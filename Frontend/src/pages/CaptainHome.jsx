@@ -161,11 +161,6 @@ const CaptainHome = () => {
 
     // Push GPS immediately when going online so dispatch finds this captain now
     if (newStatus === 'active') emitCurrentLocation()
-
-    axios.patch(`${import.meta.env.VITE_BASE_URL}/captains/status`,
-      { status: newStatus },
-      { headers: authHeader() }
-    ).catch(err => console.warn('Status update failed:', err.message))
   }, [captain, socket, isOnline, emitCurrentLocation])
 
   const confirmRide = async () => {

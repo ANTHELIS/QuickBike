@@ -32,9 +32,10 @@ function handleJoin(socket, io) {
                 // Join a user-specific room for targeted events
                 socket.join(`user:${userId}`);
             } else if (userType === 'captain') {
+                const captain = await captainModel.findById(userId);
                 await captainModel.findByIdAndUpdate(userId, {
                     socketId: socket.id,
-                    status: 'active',
+                    ...(captain?.status !== 'inactive' && { status: 'active' }),
                 });
                 socket.join(`captain:${userId}`);
             } else {
@@ -177,11 +178,7 @@ function handleCaptainLocation(socket, io) {
                 });
             }
 
-            // ── Lightweight broadcast for nearby-captains map ──
-            socket.broadcast.emit('nearby-captain-moved', {
-                ltd: location.ltd,
-                lng: location.lng,
-            });
+            // The LiveTracking map fetches nearby captains via HTTP polling, so we skip emitting 'nearby-captain-moved' to everyone to avoid privacy leaks and massive traffic.
         } catch (err) {
             logger.error('Location update error', {
                 error: err.message,

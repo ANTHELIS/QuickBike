@@ -85,24 +85,6 @@ router.post(
 // Shared endpoints (user OR captain)
 // ─────────────────────────────────────────────────
 
-// Cancel ride
-router.post(
-    '/:rideId/cancel',
-    authMiddleware.authAny,
-    asyncHandler(rideController.cancelRide)
-);
-
-// Rate ride
-router.post(
-    '/:rideId/rate',
-    authMiddleware.authAny,
-    [
-        body('rating').isFloat({ min: 1, max: 5 }).withMessage('Rating must be 1–5'),
-        body('feedback').optional().isString(),
-    ],
-    asyncHandler(rideController.rateRide)
-);
-
 // Promo code validation
 router.get(
     '/promo/:code',
@@ -122,6 +104,24 @@ router.get(
     '/stats',
     authMiddleware.authAny,
     asyncHandler(rideController.getUserStats)
+);
+
+// Cancel ride
+router.post(
+    '/:rideId/cancel',
+    authMiddleware.authAny,
+    asyncHandler(rideController.cancelRide)
+);
+
+// Rate ride
+router.post(
+    '/:rideId/rate',
+    authMiddleware.authAny,
+    [
+        body('rating').isFloat({ min: 1, max: 5 }).withMessage('Rating must be 1–5'),
+        body('feedback').optional().isString(),
+    ],
+    asyncHandler(rideController.rateRide)
 );
 
 module.exports = router;

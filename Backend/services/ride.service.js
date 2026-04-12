@@ -79,12 +79,28 @@ function generateOtp(digits) {
 // ─────────────────────────────────────────────────
 // Create Ride — with fare breakdown and job scheduling
 // ─────────────────────────────────────────────────
-module.exports.createRide = async ({ user, pickup, destination, vehicleType }) => {
+module.exports.createRide = async ({ user, pickup, destination, vehicleType, promoCode }) => {
     if (!user || !pickup || !destination || !vehicleType) {
         throw new AppError('All fields are required', 400);
     }
 
     const fareData = await getFare(pickup, destination);
+    let finalFare = fareData[vehicleType];
+    let appliedPromo = null;
+    let appliedDiscount = 0;
+
+    // Apply promo code if provided
+    if (promoCode) {
+        try {
+            const promoResult = await module.exports.validatePromoCode(promoCode, finalFare, user, vehicleType);
+            finalFare = promoResult.finalFare;
+            appliedDiscount = promoResult.discount;
+            appliedPromo = promoResult.code;
+        } catch (err) {
+            // Log but don't fail the ride creation if promo is invalid
+            logger.warn('Failed to apply promo code during ride creation', { promoCode, user, error: err.message });
+        }
+    }
 
     // Calculate fare breakdown for the selected vehicle type
     const distanceTime = await mapService.getDistanceTime(pickup, destination);
@@ -101,7 +117,9 @@ module.exports.createRide = async ({ user, pickup, destination, vehicleType }) =
         destination,
         vehicleType,
         otp: generateOtp(6),
-        fare: fareData[vehicleType],
+        fare: finalFare,
+        promoCode: appliedPromo,
+        discount: appliedDiscount,
         fareBreakdown,
         surgeMultiplier: fareData.surgeMultiplier,
         estimatedDistance: distanceTime.distance.value,

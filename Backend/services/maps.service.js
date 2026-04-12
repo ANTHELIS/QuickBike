@@ -189,6 +189,7 @@ module.exports.getCaptainsInTheRadius = async (lat, lng, radiusKm) => {
                 query: {
                     status: 'active',
                     kycStatus: 'approved',
+                    socketId: { $ne: null },
                     'location.coordinates': { $ne: [0, 0] },
                 },
             },

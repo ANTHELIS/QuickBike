@@ -13,13 +13,16 @@ const CaptainRiding = () => {
   const { socket } = useContext(SocketContext)
   const { captain } = useContext(CaptainDataContext)
 
+  const [toast, setToast] = useState('')
+
   // Keep sending location updates while riding and listen for cancellations
   useEffect(() => {
     if (!socket || !captain?._id) return
 
-    const handleRideCancelled = () => {
-      alert('The passenger cancelled the ride.')
-      navigate('/captain-home')
+    const handleRideCancelled = (data) => {
+      const reason = data?.reason || 'The passenger cancelled the ride.'
+      setToast(reason)
+      setTimeout(() => { navigate('/captain-home') }, 2500)
     }
     socket.on('ride-cancelled', handleRideCancelled)
 
@@ -59,6 +62,12 @@ const CaptainRiding = () => {
             <span className="font-extrabold text-sm text-white tracking-widest uppercase">Ride in Progress</span>
           </div>
         </header>
+
+        {toast && (
+          <div className="absolute top-8 left-4 right-4 z-50 bg-red-600 text-white px-4 py-3 rounded-2xl shadow-lg text-sm font-bold text-center">
+            {toast}
+          </div>
+        )}
 
         {/* Passenger info floating card */}
         <div className="absolute top-28 left-4 right-4 z-20">

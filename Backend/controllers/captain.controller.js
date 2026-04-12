@@ -110,10 +110,8 @@ module.exports.logoutCaptain = async (req, res) => {
 
 module.exports.updateStatus = async (req, res) => {
     const { status } = req.body;
-    const captain = req.captain;
-
-    captain.status = status;
-    await captain.save();
+    
+    await captainModel.findByIdAndUpdate(req.captain._id, { $set: { status } });
 
     res.status(200).json({ message: `Status updated to ${status}`, status });
 };

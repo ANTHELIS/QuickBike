@@ -100,7 +100,7 @@ const UserRides = () => {
         params: { userType: 'user', status, page: pg, limit: 15 },
         headers: authHeader(),
       })
-      setRides(res.data.rides || [])
+      setRides(res.data.data || [])
       setPagination(res.data.pagination || {})
     } catch (err) {
       setError(err.response?.data?.message || 'Could not load rides. Please try again.')
@@ -114,7 +114,7 @@ const UserRides = () => {
       params: { userType: 'user' },
       headers: authHeader(),
     })
-      .then(r => setStats(r.data))
+      .then(r => setStats(r.data.data))
       .catch(() => {})
       .finally(() => setStatsLoading(false))
   }, [])

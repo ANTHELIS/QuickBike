@@ -86,18 +86,19 @@ const AdminCaptains = () => {
               <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-widest">KYC</th>
               <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
               <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Joined</th>
+              <th className="text-left px-5 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-widest">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="6" className="text-center py-16">
+              <tr><td colSpan="7" className="text-center py-16">
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
                   <p className="text-slate-500 text-sm">Loading captains...</p>
                 </div>
               </td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan="6" className="text-center py-16">
+              <tr><td colSpan="7" className="text-center py-16">
                 <i className="fa-solid fa-motorcycle text-slate-700 text-4xl mb-3 block" />
                 <p className="text-slate-500 text-sm">No captains found</p>
               </td></tr>
@@ -135,6 +136,30 @@ const AdminCaptains = () => {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-slate-400 text-sm">{joined}</td>
+                  <td className="px-5 py-4">
+                    {c.kycStatus === 'pending' && (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={async () => {
+                            try {
+                              await axios.post(`${import.meta.env.VITE_BASE_URL}/api/admin/kyc/${c._id}/review`, { status: 'approved' }, { headers: adminHeader() })
+                              fetchCaptains()
+                            } catch (e) { alert('Failed to approve') }
+                          }}
+                          className="bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                        >Approve</button>
+                        <button 
+                          onClick={async () => {
+                            try {
+                              await axios.post(`${import.meta.env.VITE_BASE_URL}/api/admin/kyc/${c._id}/review`, { status: 'rejected' }, { headers: adminHeader() })
+                              fetchCaptains()
+                            } catch (e) { alert('Failed to reject') }
+                          }}
+                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                        >Reject</button>
+                      </div>
+                    )}
+                  </td>
                 </tr>
               )
             })}

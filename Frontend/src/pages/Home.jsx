@@ -92,26 +92,27 @@ const Home = () => {
   }, [])
 
   useEffect(() => {
-    socket.on('ride-confirmed', (data) => {
+    const handleConfirmed = (data) => {
       setVehicleFound(false)
       setWaitingForDriver(true)
       setRide(data)
-    })
-    socket.on('ride-started', (data) => {
+    }
+
+    const handleStarted = (data) => {
       setWaitingForDriver(false)
       navigate('/riding', { state: { ride: data } })
-    })
-    socket.on('ride-cancelled', (data) => {
+    }
+
+    const handleCancelled = (data) => {
       setVehicleFound(false)
       setWaitingForDriver(false)
       setVehiclePanel(false)
       setRide(null)
       const reason = data?.reason || 'The ride was cancelled.'
       showToast(reason)
-    })
+    }
 
-    // ── Ride State Sync — restore active ride on reconnect ──
-    socket.on('ride-state-sync', (data) => {
+    const handleStateSync = (data) => {
       if (!data) return
       setRide(data)
       if (data.status === 'pending') {
@@ -124,17 +125,24 @@ const Home = () => {
       } else if (data.status === 'ongoing') {
         navigate('/riding', { state: { ride: data } })
       }
-    })
+    }
+
+    socket.on('ride-confirmed', handleConfirmed)
+    socket.on('ride-started', handleStarted)
+    socket.on('ride-cancelled', handleCancelled)
+    socket.on('ride-state-sync', handleStateSync)
 
     return () => {
-      socket.off('ride-confirmed')
-      socket.off('ride-started')
-      socket.off('ride-cancelled')
-      socket.off('ride-state-sync')
+      socket.off('ride-confirmed', handleConfirmed)
+      socket.off('ride-started', handleStarted)
+      socket.off('ride-cancelled', handleCancelled)
+      socket.off('ride-state-sync', handleStateSync)
     }
   }, [socket, navigate])
 
-  const handleInputChange = async (value, field) => {
+  const searchTimeout = React.useRef(null)
+
+  const handleInputChange = (value, field) => {
     if (field === 'pickup') {
       setPickup(value)
       setIsCurrentLocation(false) // user is manually typing — drop the GPS label
@@ -143,13 +151,18 @@ const Home = () => {
     }
 
     if (value.length < 3) { setSuggestions([]); return }
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
-        params: { input: value },
-        headers: { Authorization: `Bearer ${localStorage.getItem('user_token')}` }
-      })
-      setSuggestions(res.data || [])
-    } catch { setSuggestions([]) }
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current)
+    
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+          params: { input: value },
+          headers: { Authorization: `Bearer ${localStorage.getItem('user_token')}` }
+        })
+        setSuggestions(res.data || [])
+      } catch { setSuggestions([]) }
+    }, 400)
   }
 
   const selectSuggestion = (s) => {
@@ -233,10 +246,10 @@ const Home = () => {
     }
   }
 
-  const createRide = async () => {
+  const createRide = async (promoCode) => {
     try {
       const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create`,
-        { pickup, destination, vehicleType },
+        { pickup, destination, vehicleType, ...(promoCode && { promoCode }) },
         { headers: { Authorization: `Bearer ${localStorage.getItem('user_token')}` } }
       )
       setRide(res.data)

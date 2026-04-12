@@ -267,7 +267,7 @@ const VehiclePanel = ({ pickup, destination, fare, vehicleType, selectVehicle, s
           </div>
         </div>
         <button
-          onClick={createRide}
+          onClick={() => createRide(promoResult?.code)}
           className="w-full bg-gradient-to-r from-[#b35f00] to-[#eb8300] py-4 rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-[0_4px_14px_0_rgba(235,131,0,0.39)]"
         >
           <span className="text-white font-bold text-lg">Confirm {vehicles.find(v => v.type === vehicleType)?.name}</span>
