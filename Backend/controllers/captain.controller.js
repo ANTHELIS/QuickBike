@@ -29,7 +29,7 @@ module.exports.registerCaptain = async (req, res) => {
         captain = await captainService.createCaptain({
             firstname: fullname.firstname,
             lastname:  fullname.lastname,
-            email:     email || null,
+            email:     email || undefined,
             phone,
             password:  hashedPassword,
             color:     vehicle.color,
@@ -48,6 +48,12 @@ module.exports.registerCaptain = async (req, res) => {
     }
 
     const token = captain.generateAuthToken();
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000,
+    });
     res.status(201).json({ token, captain });
 };
 

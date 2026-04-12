@@ -32,8 +32,8 @@ const AdminCaptains = () => {
         params: { page, limit },
         headers: adminHeader(),
       })
-      setCaptains(res.data.captains || [])
-      setTotal(res.data.total || 0)
+      setCaptains(res.data.data || res.data.captains || [])
+      setTotal(res.data.pagination?.total || res.data.total || 0)
     } catch (err) {
       if (err.response?.status === 401) navigate('/admin/login')
     } finally { setLoading(false) }

@@ -297,9 +297,9 @@ const Home = () => {
 
                 {/* Pickup */}
                 <div className="relative">
-                  <div className="absolute left-[17px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-orange-500 ring-4 ring-orange-100 z-20" />
+                  <div className="absolute left-[17px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-800 ring-4 ring-slate-100 z-20" />
                   <input
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-12 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400 transition font-medium text-sm"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-12 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-700 transition font-medium text-sm"
                     placeholder="Current location"
                     value={isCurrentLocation ? 'Your Current Location' : pickup}
                     onFocus={() => {
@@ -315,20 +315,20 @@ const Home = () => {
                   />
                   {/* Pick on map button */}
                   <button
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl flex items-center justify-center transition-colors active:scale-90 z-20"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl flex items-center justify-center transition-colors active:scale-90 z-20"
                     onClick={() => setMapPickerField('pickup')}
                     title="Pick pickup on map"
                     type="button"
                   >
-                    <i className="fa-solid fa-map-location-dot text-orange-500 text-xs" />
+                    <i className="fa-solid fa-map-location-dot text-slate-500 text-xs" />
                   </button>
                 </div>
 
                 {/* Destination */}
                 <div className="relative">
-                  <div className="absolute left-[17px] top-1/2 -translate-y-1/2 w-3 h-3 bg-slate-800 rounded-sm z-20" />
+                  <div className="absolute left-[17px] top-1/2 -translate-y-1/2 w-3 h-3 bg-orange-500 rounded-sm z-20" />
                   <input
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-12 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-700 transition font-medium text-sm"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-12 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400 transition font-medium text-sm"
                     placeholder="Where are you going?"
                     value={destination}
                     onFocus={() => { setActiveField('destination'); setPanelOpen(true) }}
@@ -336,12 +336,12 @@ const Home = () => {
                   />
                   {/* Pick on map button */}
                   <button
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl flex items-center justify-center transition-colors active:scale-90 z-20"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl flex items-center justify-center transition-colors active:scale-90 z-20"
                     onClick={() => setMapPickerField('destination')}
                     title="Pick drop-off on map"
                     type="button"
                   >
-                    <i className="fa-solid fa-map-location-dot text-slate-500 text-xs" />
+                    <i className="fa-solid fa-map-location-dot text-orange-500 text-xs" />
                   </button>
                 </div>
               </div>

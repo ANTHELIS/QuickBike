@@ -14,7 +14,8 @@ const AdminLogin = () => {
     setLoading(true); setError('')
     try {
       const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/admin/login`, form)
-      localStorage.setItem('admin_token', res.data.token)
+      const { token } = res.data.data || res.data
+      localStorage.setItem('admin_token', token)
       navigate('/admin')
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Check credentials.')

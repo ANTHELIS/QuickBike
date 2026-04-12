@@ -52,7 +52,7 @@ const KycDetail = () => {
     const fetch = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/admin/kyc/${id}`, { headers: adminHeader() })
-        setKyc(res.data.kyc)
+        setKyc(res.data.data || res.data.kyc)
       } catch (err) {
         if (err.response?.status === 401) navigate('/admin/login')
       } finally { setLoading(false) }
@@ -147,10 +147,12 @@ const KycDetail = () => {
                 Submitted: {new Date(kyc.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             )}
-            {kyc.rejectionReason && (
+            {kyc.rejectionReasons?.length > 0 && (
               <div className="mt-3 bg-red-500/10 border border-red-500/20 rounded-xl p-3">
                 <p className="text-red-400 text-xs font-semibold">Rejection reason:</p>
-                <p className="text-red-300 text-xs mt-1">{kyc.rejectionReason}</p>
+                {kyc.rejectionReasons.map((r, i) => (
+                  <p key={i} className="text-red-300 text-xs mt-1">• {r.reason} ({r.field})</p>
+                ))}
               </div>
             )}
           </div>
@@ -194,19 +196,19 @@ const KycDetail = () => {
               <i className="fa-solid fa-id-card text-orange-400" /> Driving License
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <DocCard label="Front" url={kyc.drivingLicenseFront} />
-              <DocCard label="Back" url={kyc.drivingLicenseBack} />
+              <DocCard label="Front" url={kyc.drivingLicense?.frontUrl} />
+              <DocCard label="Back" url={kyc.drivingLicense?.backUrl} />
             </div>
-            {kyc.licenseNumber && <p className="text-slate-400 text-xs mt-3">License #: <span className="text-slate-200 font-semibold">{kyc.licenseNumber}</span></p>}
+            {kyc.drivingLicense?.number && <p className="text-slate-400 text-xs mt-3">License #: <span className="text-slate-200 font-semibold">{kyc.drivingLicense.number}</span></p>}
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
             <p className="text-white font-bold text-sm mb-4 flex items-center gap-2">
-              <i className="fa-solid fa-person text-blue-400" /> ID Card ({kyc.idType || 'Unknown'})
+              <i className="fa-solid fa-person text-blue-400" /> ID Card ({kyc.identity?.type || 'Unknown'})
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <DocCard label="Front" url={kyc.idCardFront} />
-              <DocCard label="Back" url={kyc.idCardBack} />
+              <DocCard label="Front" url={kyc.identity?.frontUrl} />
+              <DocCard label="Back" url={kyc.identity?.backUrl} />
             </div>
           </div>
 
@@ -215,14 +217,14 @@ const KycDetail = () => {
               <i className="fa-solid fa-motorcycle text-green-400" /> Vehicle &amp; RC
             </p>
             <div className="grid grid-cols-3 gap-3 mb-3">
-              {[['Vehicle Number', kyc.vehicleNumber], ['Model', kyc.vehicleModel], ['Year', kyc.vehicleYear], ['Color', kyc.vehicleColor]].map(([l, v]) => (
+              {[['Vehicle Number', kyc.vehicle?.number], ['Model', kyc.vehicle?.model], ['Year', kyc.vehicle?.year], ['Color', kyc.vehicle?.color]].map(([l, v]) => (
                 <div key={l} className="bg-slate-800 rounded-xl p-3 border border-slate-700">
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{l}</p>
                   <p className="text-white font-bold text-sm mt-0.5">{v || '—'}</p>
                 </div>
               ))}
             </div>
-            <DocCard label="RC Document" url={kyc.rcDocument} />
+            <DocCard label="RC Document" url={kyc.vehicle?.rcUrl} />
           </div>
         </div>
       </div>

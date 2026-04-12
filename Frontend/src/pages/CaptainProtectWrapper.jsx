@@ -15,6 +15,12 @@ const CaptainProtectWrapper = ({ children }) => {
             return
         }
 
+        // Optimization: If captain is already in memory, avoid fetching profile again.
+        if (captain) {
+            setIsLoading(false)
+            return
+        }
+
         axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`, {
             headers: { Authorization: `Bearer ${token}` }
         }).then(response => {

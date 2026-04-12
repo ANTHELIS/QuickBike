@@ -34,7 +34,7 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
     navigator.geolocation?.getCurrentPosition(
       (pos) => setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => {},
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     )
   }, [])
 
@@ -146,14 +146,14 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
         <div className={`flex flex-col items-center transition-transform duration-200 ${isDragging ? '-translate-y-4' : ''}`}>
           {/* Pin head */}
           <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-2xl border-4 border-white ${
-            isPickup ? 'bg-orange-500' : 'bg-slate-800'
+            isPickup ? 'bg-slate-800' : 'bg-orange-500'
           }`}>
-            <i className={`fa-solid ${isPickup ? 'fa-location-crosshairs' : 'fa-location-dot'} text-white text-lg`} />
+            <i className={`fa-solid ${isPickup ? 'fa-circle-dot' : 'fa-location-dot'} text-white text-lg`} />
           </div>
           {/* Pin stem */}
-          <div className={`w-0.5 h-5 ${isPickup ? 'bg-orange-500' : 'bg-slate-800'}`} />
+          <div className={`w-0.5 h-5 ${isPickup ? 'bg-slate-800' : 'bg-orange-500'}`} />
           {/* Pin shadow dot */}
-          <div className={`w-3 h-1.5 rounded-full opacity-30 ${isPickup ? 'bg-orange-800' : 'bg-black'} ${
+          <div className={`w-3 h-1.5 rounded-full opacity-30 ${isPickup ? 'bg-black' : 'bg-orange-800'} ${
             isDragging ? 'scale-150 opacity-10' : ''
           } transition-all duration-200`} />
         </div>
@@ -162,7 +162,7 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
       {/* ── Accuracy hint ring (pulsing) ── */}
       <div className="absolute inset-0 z-[9] flex items-center justify-center pointer-events-none">
         <div className={`w-20 h-20 rounded-full border-2 opacity-20 animate-ping ${
-          isPickup ? 'border-orange-500' : 'border-slate-800'
+          isPickup ? 'border-slate-800' : 'border-orange-500'
         } ${isDragging ? 'hidden' : ''}`} />
       </div>
 
@@ -172,9 +172,9 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
         {/* Address preview */}
         <div className="flex items-start gap-3 mb-5">
           <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-            isPickup ? 'bg-orange-100' : 'bg-slate-100'
+            isPickup ? 'bg-slate-100' : 'bg-orange-100'
           }`}>
-            <i className={`fa-solid ${isPickup ? 'fa-location-crosshairs text-orange-500' : 'fa-location-dot text-slate-600'} text-base`} />
+            <i className={`fa-solid ${isPickup ? 'fa-location-crosshairs text-slate-600' : 'fa-location-dot text-orange-500'} text-base`} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
@@ -182,7 +182,7 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
             </p>
             {loading ? (
               <div className="flex items-center gap-2 mt-1">
-                <div className="w-4 h-4 border-2 border-orange-200 border-t-orange-500 rounded-full animate-spin shrink-0" />
+                <div className={`w-4 h-4 border-2 ${isPickup ? 'border-slate-200 border-t-slate-800' : 'border-orange-200 border-t-orange-500'} rounded-full animate-spin shrink-0`} />
                 <span className="text-sm text-slate-400 font-medium">Resolving address…</span>
               </div>
             ) : (
@@ -199,8 +199,8 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
           disabled={!address || loading}
           className={`w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg disabled:opacity-50 ${
             isPickup
-              ? 'bg-gradient-to-r from-[#904d00] to-[#E67E00] shadow-orange-200 text-white'
-              : 'bg-gradient-to-r from-slate-700 to-slate-900 shadow-slate-200 text-white'
+              ? 'bg-slate-800 shadow-slate-200 text-white'
+              : 'bg-gradient-to-r from-[#904d00] to-[#E67E00] shadow-orange-200 text-white'
           }`}
         >
           {loading ? (

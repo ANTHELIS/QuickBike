@@ -77,7 +77,19 @@ const AdminDashboard = () => {
         const token = localStorage.getItem('admin_token')
         if (!token) { navigate('/admin/login'); return }
         const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/admin/stats`, { headers: adminHeader() })
-        setStats(res.data)
+        const d = res.data.data || res.data
+        // Flatten the nested response into the shape our cards expect
+        setStats({
+          totalUsers: d.users?.total ?? d.totalUsers ?? 0,
+          totalCaptains: d.captains?.total ?? d.totalCaptains ?? 0,
+          pendingKyc: d.kyc?.pending ?? d.pendingKyc ?? 0,
+          approvedKyc: d.kyc?.approved ?? d.approvedKyc ?? 0,
+          rejectedKyc: d.kyc?.rejected ?? d.rejectedKyc ?? 0,
+          totalRides: d.rides?.total ?? d.totalRides ?? 0,
+          activeRides: d.rides?.active ?? d.activeRides ?? 0,
+          completedToday: d.rides?.completedToday ?? 0,
+          todayRevenue: d.revenue?.today ?? 0,
+        })
       } catch (err) {
         if (err.response?.status === 401) navigate('/admin/login')
       } finally { setLoading(false) }

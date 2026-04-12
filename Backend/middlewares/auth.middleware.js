@@ -12,7 +12,7 @@ const logger = require('../utils/logger');
  * Extract token from cookie or Authorization header.
  */
 function extractToken(req) {
-    return req.cookies.token || (req.headers.authorization?.split(' ')[1]) || null;
+    return (req.headers.authorization?.split(' ')[1]) || req.cookies.token || null;
 }
 
 /**

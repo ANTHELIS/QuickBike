@@ -16,13 +16,20 @@ module.exports.createCaptain = async ({
         throw new AppError('All required fields must be provided', 400);
     }
 
-    const captain = await captainModel.create({
+    // Build the document — omit email entirely if not provided
+    // so the sparse unique index can allow multiple captains without email
+    const doc = {
         fullname: { firstname, lastname },
-        email: email || null,
         phone,
         password,
         vehicle: { color, plate, capacity, vehicleType },
-    });
+    };
 
+    // Only include email if actually provided (non-empty string)
+    if (email && email.trim()) {
+        doc.email = email.trim();
+    }
+
+    const captain = await captainModel.create(doc);
     return captain;
 };

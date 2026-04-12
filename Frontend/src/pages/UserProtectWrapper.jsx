@@ -15,6 +15,12 @@ const UserProtectWrapper = ({ children }) => {
             return
         }
 
+        // Optimization: If user is already in memory, avoid fetching profile again.
+        if (user) {
+            setIsLoading(false)
+            return
+        }
+
         axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
             headers: { Authorization: `Bearer ${token}` }
         }).then(response => {

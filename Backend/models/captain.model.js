@@ -22,11 +22,11 @@ const captainSchema = new mongoose.Schema(
             type: String,
             required: false,
             unique: true,
-            sparse: true,   // allows multiple null values
+            sparse: true,   // allows multiple documents without email
             lowercase: true,
             trim: true,
             match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
-            default: null,
+            // NOTE: No default — field must be ABSENT (not null) for sparse index to work
         },
         phone: {
             type: String,

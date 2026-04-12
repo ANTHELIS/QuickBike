@@ -27,8 +27,8 @@ const KycList = () => {
         params: { status: filter === 'all' ? undefined : filter, search },
         headers: adminHeader(),
       })
-      setKycs(res.data.kycs || [])
-      setTotal(res.data.total || 0)
+      setKycs(res.data.data || res.data.kycs || [])
+      setTotal(res.data.pagination?.total || res.data.total || 0)
     } catch (err) {
       if (err.response?.status === 401) navigate('/admin/login')
     } finally { setLoading(false) }

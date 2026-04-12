@@ -20,8 +20,8 @@ const AdminUsers = () => {
         params: { page, limit },
         headers: adminHeader(),
       })
-      setUsers(res.data.users || [])
-      setTotal(res.data.total || 0)
+      setUsers(res.data.data || res.data.users || [])
+      setTotal(res.data.pagination?.total || res.data.total || 0)
     } catch (err) {
       if (err.response?.status === 401) navigate('/admin/login')
     } finally { setLoading(false) }
