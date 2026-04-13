@@ -24,6 +24,10 @@ router.post(
             .isString()
             .isIn(['auto', 'car', 'moto'])
             .withMessage('Invalid vehicle type'),
+        body('pickupLat').optional().isNumeric(),
+        body('pickupLng').optional().isNumeric(),
+        body('destLat').optional().isNumeric(),
+        body('destLng').optional().isNumeric(),
     ],
     asyncHandler(rideController.createRide)
 );
@@ -43,6 +47,10 @@ router.get(
             .trim()
             .isLength({ min: 3 })
             .withMessage('Invalid destination address'),
+        query('pickupLat').optional().isNumeric(),
+        query('pickupLng').optional().isNumeric(),
+        query('destLat').optional().isNumeric(),
+        query('destLng').optional().isNumeric(),
     ],
     asyncHandler(rideController.getFare)
 );

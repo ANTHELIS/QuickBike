@@ -118,7 +118,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
         } catch { /* fall through */ }
     }
 
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${config.googleMapsApiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&units=metric&key=${config.googleMapsApiKey}`;
     const response = await axios.get(url, { timeout: 10000 });
 
     if (response.data.status !== 'OK') {

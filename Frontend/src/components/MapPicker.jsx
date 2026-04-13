@@ -81,7 +81,7 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
 
   const handleConfirm = () => {
     if (!address || loading) return
-    onConfirm(address)
+    onConfirm(address, centerLatLng)
     onClose()
   }
 

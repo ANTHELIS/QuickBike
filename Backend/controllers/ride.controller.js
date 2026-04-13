@@ -18,7 +18,7 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { pickup, destination, vehicleType, promoCode } = req.body;
+    const { pickup, destination, vehicleType, promoCode, pickupLat, pickupLng, destLat, destLng } = req.body;
 
     const ride = await rideService.createRide({
         user: req.user._id,
@@ -26,6 +26,10 @@ module.exports.createRide = async (req, res) => {
         destination,
         vehicleType,
         promoCode,
+        pickupLat,
+        pickupLng,
+        destLat,
+        destLng,
     });
 
     // Send response immediately without OTP
@@ -36,10 +40,18 @@ module.exports.createRide = async (req, res) => {
     // Fire-and-forget: notify nearby captains asynchronously
     setImmediate(async () => {
         try {
-            const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+            let pickupLtd, pickupLngVal;
+            if (pickupLat && pickupLng) {
+                pickupLtd = parseFloat(pickupLat);
+                pickupLngVal = parseFloat(pickupLng);
+            } else {
+                const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+                pickupLtd = pickupCoordinates.ltd;
+                pickupLngVal = pickupCoordinates.lng;
+            }
             const captainsInRadius = await mapService.getCaptainsInTheRadius(
-                pickupCoordinates.ltd,
-                pickupCoordinates.lng,
+                pickupLtd,
+                pickupLngVal,
                 5 // 5km initial radius
             );
 
@@ -82,8 +94,8 @@ module.exports.getFare = async (req, res) => {
         return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { pickup, destination } = req.query;
-    const fare = await rideService.getFare(pickup, destination);
+    const { pickup, destination, pickupLat, pickupLng, destLat, destLng } = req.query;
+    const fare = await rideService.getFare(pickup, destination, pickupLat, pickupLng, destLat, destLng);
 
     // Return in the same format the frontend expects
     res.status(200).json(fare);

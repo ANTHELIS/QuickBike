@@ -96,10 +96,10 @@ const Riding = () => {
                   <span>Base fare</span><span>₹{ride.fareBreakdown.base}</span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-600">
-                  <span>Distance</span><span>₹{ride.fareBreakdown.distance}</span>
+                  <span>Distance charge</span><span>₹{ride.fareBreakdown.distance}</span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-600">
-                  <span>Time</span><span>₹{ride.fareBreakdown.time}</span>
+                  <span>Time charge</span><span>₹{ride.fareBreakdown.time}</span>
                 </div>
                 {ride.fareBreakdown.nightCharge > 0 && (
                   <div className="flex justify-between text-xs text-amber-600">

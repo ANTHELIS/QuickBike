@@ -46,13 +46,16 @@ async function computeSurgeMultiplier(pickup) {
 // ─────────────────────────────────────────────────
 // Get Fare — returns fares for all vehicle types
 // ─────────────────────────────────────────────────
-async function getFare(pickup, destination) {
+async function getFare(pickup, destination, pickupLat, pickupLng, destLat, destLng) {
     if (!pickup || !destination) {
         throw new AppError('Pickup and destination are required', 400);
     }
 
+    const originForMap = (pickupLat && pickupLng) ? `${parseFloat(pickupLat)},${parseFloat(pickupLng)}` : pickup;
+    const destForMap = (destLat && destLng) ? `${parseFloat(destLat)},${parseFloat(destLng)}` : destination;
+
     const [distanceTime, surgeMultiplier] = await Promise.all([
-        mapService.getDistanceTime(pickup, destination),
+        mapService.getDistanceTime(originForMap, destForMap),
         computeSurgeMultiplier(pickup),
     ]);
 
@@ -79,12 +82,12 @@ function generateOtp(digits) {
 // ─────────────────────────────────────────────────
 // Create Ride — with fare breakdown and job scheduling
 // ─────────────────────────────────────────────────
-module.exports.createRide = async ({ user, pickup, destination, vehicleType, promoCode }) => {
+module.exports.createRide = async ({ user, pickup, destination, vehicleType, promoCode, pickupLat, pickupLng, destLat, destLng }) => {
     if (!user || !pickup || !destination || !vehicleType) {
         throw new AppError('All fields are required', 400);
     }
 
-    const fareData = await getFare(pickup, destination);
+    const fareData = await getFare(pickup, destination, pickupLat, pickupLng, destLat, destLng);
     let finalFare = fareData[vehicleType];
     let appliedPromo = null;
     let appliedDiscount = 0;
@@ -102,8 +105,11 @@ module.exports.createRide = async ({ user, pickup, destination, vehicleType, pro
         }
     }
 
+    const originForMap = (pickupLat && pickupLng) ? `${parseFloat(pickupLat)},${parseFloat(pickupLng)}` : pickup;
+    const destForMap = (destLat && destLng) ? `${parseFloat(destLat)},${parseFloat(destLng)}` : destination;
+    
     // Calculate fare breakdown for the selected vehicle type
-    const distanceTime = await mapService.getDistanceTime(pickup, destination);
+    const distanceTime = await mapService.getDistanceTime(originForMap, destForMap);
     const fareBreakdown = calculateFare({
         vehicleType,
         distanceMeters: distanceTime.distance.value,
@@ -111,7 +117,7 @@ module.exports.createRide = async ({ user, pickup, destination, vehicleType, pro
         surgeMultiplier: fareData.surgeMultiplier,
     });
 
-    const ride = await rideModel.create({
+    const ridePayload = {
         user,
         pickup,
         destination,
@@ -125,7 +131,16 @@ module.exports.createRide = async ({ user, pickup, destination, vehicleType, pro
         estimatedDistance: distanceTime.distance.value,
         estimatedDuration: distanceTime.duration.value,
         dispatchedAt: new Date(),
-    });
+    };
+
+    if (pickupLat && pickupLng) {
+        ridePayload.pickupLocation = { type: 'Point', coordinates: [parseFloat(pickupLng), parseFloat(pickupLat)] };
+    }
+    if (destLat && destLng) {
+        ridePayload.destinationLocation = { type: 'Point', coordinates: [parseFloat(destLng), parseFloat(destLat)] };
+    }
+
+    const ride = await rideModel.create(ridePayload);
 
     // Schedule background jobs
     try {

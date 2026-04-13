@@ -12,6 +12,8 @@ import MapPicker from '../components/MapPicker'
 const Home = () => {
   const [pickup, setPickup] = useState('')
   const [destination, setDestination] = useState('')
+  const [pickupCoords, setPickupCoords] = useState(null)
+  const [destCoords, setDestCoords] = useState(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [activeField, setActiveField] = useState(null)
   const [suggestions, setSuggestions] = useState([])
@@ -48,6 +50,7 @@ const Home = () => {
           })
           if (res.data?.address) {
             setPickup(res.data.address)
+            setPickupCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
             setIsCurrentLocation(true)
           }
         } catch { }
@@ -146,8 +149,10 @@ const Home = () => {
     if (field === 'pickup') {
       setPickup(value)
       setIsCurrentLocation(false) // user is manually typing — drop the GPS label
+      setPickupCoords(null)
     } else {
       setDestination(value)
+      setDestCoords(null)
     }
 
     if (value.length < 3) { setSuggestions([]); return }
@@ -166,8 +171,13 @@ const Home = () => {
   }
 
   const selectSuggestion = (s) => {
-    if (activeField === 'pickup') setPickup(s)
-    else setDestination(s)
+    if (activeField === 'pickup') {
+      setPickup(s)
+      setPickupCoords(null)
+    } else {
+      setDestination(s)
+      setDestCoords(null)
+    }
     setSuggestions([])
   }
 
@@ -182,6 +192,7 @@ const Home = () => {
     const place = savedPlaces.find(p => p.label.toLowerCase() === label.toLowerCase())
     if (place) {
       setDestination(place.address)
+      setDestCoords(null)
       setSuggestions([])
       setPanelOpen(true)   // expand panel so user sees the filled field
     } else {
@@ -206,6 +217,7 @@ const Home = () => {
           })
           if (res.data?.address) {
             setPickup(res.data.address)
+            setPickupCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
             setIsCurrentLocation(true)
             setSuggestions([])
             setActiveField('destination') // auto-advance focus to destination
@@ -232,8 +244,12 @@ const Home = () => {
     setFareError('')
     setFareLoading(true)
     try {
+      const payload = { pickup, destination }
+      if (pickupCoords) { payload.pickupLat = pickupCoords.lat; payload.pickupLng = pickupCoords.lng }
+      if (destCoords) { payload.destLat = destCoords.lat; payload.destLng = destCoords.lng }
+
       const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
-        params: { pickup, destination },
+        params: payload,
         headers: { Authorization: `Bearer ${localStorage.getItem('user_token')}` }
       })
       setFare(res.data)
@@ -248,8 +264,12 @@ const Home = () => {
 
   const createRide = async (promoCode) => {
     try {
+      const payload = { pickup, destination, vehicleType, ...(promoCode && { promoCode }) }
+      if (pickupCoords) { payload.pickupLat = pickupCoords.lat; payload.pickupLng = pickupCoords.lng }
+      if (destCoords) { payload.destLat = destCoords.lat; payload.destLng = destCoords.lng }
+
       const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create`,
-        { pickup, destination, vehicleType, ...(promoCode && { promoCode }) },
+        payload,
         { headers: { Authorization: `Bearer ${localStorage.getItem('user_token')}` } }
       )
       setRide(res.data)
@@ -612,9 +632,9 @@ const Home = () => {
         {mapPickerField && (
           <MapPicker
             fieldLabel={mapPickerField === 'pickup' ? 'Pickup' : 'Drop-off'}
-            onConfirm={(addr) => {
-              if (mapPickerField === 'pickup') { setPickup(addr); setIsCurrentLocation(false) }
-              else setDestination(addr)
+            onConfirm={(addr, coords) => {
+              if (mapPickerField === 'pickup') { setPickup(addr); setPickupCoords(coords); setIsCurrentLocation(false) }
+              else { setDestination(addr); setDestCoords(coords) }
             }}
             onClose={() => setMapPickerField(null)}
           />
