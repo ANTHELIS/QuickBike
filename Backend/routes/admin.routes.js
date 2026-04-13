@@ -42,4 +42,7 @@ router.get('/surge-zones',      asyncHandler(adminCtrl.listSurgeZones));
 router.post('/surge-zones',     requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.createSurgeZone));
 router.delete('/surge-zones/:id', requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.deleteSurgeZone));
 
+// ── Wallet Management ──
+router.post('/wallet/topup', requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.topupWallet));
+
 module.exports = router;

@@ -98,7 +98,9 @@ const FinishRide = ({ ride, setFinishRidePanel }) => {
           </div>
           <div className="ml-auto text-right">
             <div className="text-3xl font-black text-green-600">₹{ride?.fare}</div>
-            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-400">Collect Cash</span>
+            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-400">
+              {ride?.payment?.method === 'wallet' ? 'Wallet Paid' : 'Collect Cash'}
+            </span>
           </div>
         </div>
 
@@ -118,7 +120,9 @@ const FinishRide = ({ ride, setFinishRidePanel }) => {
       </div>
 
       <div className="mt-auto pb-4 flex flex-col gap-3">
-        <p className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Collect fare before completing</p>
+        <p className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+          {ride?.payment?.method === 'wallet' ? 'Fare settled from user wallet' : 'Collect fare before completing'}
+        </p>
         <button
           className="w-full bg-gradient-to-r from-green-500 to-emerald-600 py-5 rounded-2xl flex items-center justify-center gap-3 text-white font-black text-xl shadow-lg shadow-emerald-200 active:scale-95 transition-all disabled:opacity-60"
           onClick={endRide}

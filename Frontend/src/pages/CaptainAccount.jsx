@@ -39,8 +39,11 @@ const CaptainAccount = () => {
           params: { userType: 'captain', limit: 50 }, headers: authHeader()
         })
       ])
-      setStats(statsRes.data)
-      setAllRides(ridesRes.data.rides || [])
+      const statsData = statsRes.data?.data || statsRes.data
+      const rawRides = ridesRes.data
+      const ridesData = Array.isArray(rawRides) ? rawRides : rawRides?.data || rawRides?.rides || []
+      setStats(statsData)
+      setAllRides(ridesData)
     } catch (err) {
       console.warn('Stats fetch failed:', err.message)
     } finally {

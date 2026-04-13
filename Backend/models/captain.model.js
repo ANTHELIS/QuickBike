@@ -153,6 +153,12 @@ const captainSchema = new mongoose.Schema(
             verified: { type: Boolean, default: false },
         },
 
+        // ── Wallet ──
+        wallet: {
+            balance: { type: Number, default: 0, min: 0 },
+            currency: { type: String, default: 'INR' },
+        },
+
         // ── Performance ──
         performance: {
             acceptanceRate: { type: Number, default: 100, min: 0, max: 100 },

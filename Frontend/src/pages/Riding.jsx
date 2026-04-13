@@ -41,8 +41,8 @@ const Riding = () => {
       <main className="relative w-full max-w-[390px] h-[100dvh] bg-slate-100 overflow-hidden shadow-2xl flex flex-col">
 
         {/* Map Background */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <LiveTracking pickup={ride?.pickup} destination={ride?.destination} />
+        <div className="absolute inset-0 z-0">
+          <LiveTracking pickup={ride?.pickup} destination={ride?.destination} liveRoute={true} />
         </div>
         <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/20 to-black/60 pointer-events-none" />
 

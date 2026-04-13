@@ -50,7 +50,7 @@ const UserAccount = () => {
       headers: authHeader(),
       params: { userType: 'user' }
     })
-      .then(r => setStats(r.data))
+      .then(r => setStats(r.data.data))
       .catch(() => {})
   }, [user])
 
@@ -183,7 +183,10 @@ const UserAccount = () => {
             <i className="fa-solid fa-chevron-right text-slate-300"></i>
           </button>
 
-          <button className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.98] transition-transform">
+          <button
+            className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.98] transition-transform"
+            onClick={() => navigate('/user/payment')}
+          >
             <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center"><i className="fa-solid fa-wallet"></i></div>
             <div className="flex-1 text-left">
               <p className="font-bold text-slate-800">Payment Methods</p>
@@ -201,7 +204,10 @@ const UserAccount = () => {
             <i className="fa-solid fa-chevron-right text-slate-300"></i>
           </button>
 
-          <button className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.98] transition-transform">
+          <button
+            className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm active:scale-[0.98] transition-transform"
+            onClick={() => navigate('/user/help')}
+          >
             <div className="w-11 h-11 rounded-full bg-green-50 text-green-500 flex items-center justify-center"><i className="fa-solid fa-headset"></i></div>
             <div className="flex-1 text-left">
               <p className="font-bold text-slate-800">Help & Support</p>

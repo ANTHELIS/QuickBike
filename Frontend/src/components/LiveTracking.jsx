@@ -25,7 +25,7 @@ const makeBikeIcon = () => ({
     anchor: { x: 20, y: 20 },
 })
 
-const LiveTracking = ({ pickup, destination }) => {
+const LiveTracking = ({ pickup, destination, liveRoute = false }) => {
     const [currentPosition, setCurrentPosition] = useState(defaultCenter)
     const [nearbyCaptains, setNearbyCaptains] = useState([])
     const [captainCount, setCaptainCount] = useState(0)
@@ -47,26 +47,49 @@ const LiveTracking = ({ pickup, destination }) => {
         bikeIcon.current = makeBikeIcon()
     }, [])
 
-    // ── Route Directions (when pickup & destination are provided) ──
+    // ── Route Directions (Static A-B vs Dynamic Current-B) ──
+    const lastCalculatedPos = useRef(null)
+
     useEffect(() => {
-        if (!isLoaded || !window.google || !pickup || !destination) return;
+        if (!isLoaded || !window.google || !destination) return;
+        
+        // If not liveRoute, we just need pickup and destination
+        if (!liveRoute && !pickup) return;
+
+        let origin = pickup;
+
+        // If liveRoute, the origin is the current GPS position
+        if (liveRoute) {
+            // Wait for real GPS data (don't route from fallback Kolkata if not there)
+            if (currentPosition.lat === defaultCenter.lat && currentPosition.lng === defaultCenter.lng) return;
+            
+            // To prevent spamming Google Maps Directions API, only recalculate if moved > 50 meters
+            if (lastCalculatedPos.current) {
+                const distance = window.google.maps.geometry.spherical.computeDistanceBetween(
+                    lastCalculatedPos.current, currentPosition
+                );
+                if (distance < 50) return; // Haven't moved enough to recalculate
+            }
+            origin = currentPosition;
+        }
         
         const directionsService = new window.google.maps.DirectionsService();
         directionsService.route(
             {
-                origin: pickup,
+                origin: origin,
                 destination: destination,
                 travelMode: window.google.maps.TravelMode.DRIVING,
             },
             (result, status) => {
                 if (status === window.google.maps.DirectionsStatus.OK) {
                     setDirectionsResponse(result);
+                    if (liveRoute) lastCalculatedPos.current = currentPosition;
                 } else {
                     console.error(`Directions request failed due to ${status}`);
                 }
             }
         );
-    }, [isLoaded, pickup, destination]);
+    }, [isLoaded, pickup, destination, currentPosition, liveRoute]);
 
     // ── Fetch nearby active captains ── defined FIRST so recenterMap can use it
     const fetchNearbyCaptains = useCallback(async (lat, lng) => {

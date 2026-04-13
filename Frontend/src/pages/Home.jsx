@@ -262,9 +262,9 @@ const Home = () => {
     }
   }
 
-  const createRide = async (promoCode) => {
+  const createRide = async (promoCode, paymentMethod = 'cash') => {
     try {
-      const payload = { pickup, destination, vehicleType, ...(promoCode && { promoCode }) }
+      const payload = { pickup, destination, vehicleType, paymentMethod, ...(promoCode && { promoCode }) }
       if (pickupCoords) { payload.pickupLat = pickupCoords.lat; payload.pickupLng = pickupCoords.lng }
       if (destCoords) { payload.destLat = destCoords.lat; payload.destLng = destCoords.lng }
 
@@ -275,7 +275,9 @@ const Home = () => {
       setRide(res.data)
       setVehiclePanel(false)
       setVehicleFound(true)
-    } catch { }
+    } catch (err) { 
+      showToast(err.response?.data?.message || 'Failed to create ride');
+    }
   }
 
   const isIdle = !vehiclePanel && !vehicleFound && !waitingForDriver
@@ -498,6 +500,7 @@ const Home = () => {
               selectVehicle={(t) => setVehicleType(t)}
               setVehiclePanel={setVehiclePanel}
               createRide={createRide}
+              walletBalance={user?.wallet?.balance || 0}
             />
           </div>
         )}

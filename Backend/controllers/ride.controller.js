@@ -18,10 +18,10 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { pickup, destination, vehicleType, promoCode, pickupLat, pickupLng, destLat, destLng } = req.body;
+    const { pickup, destination, vehicleType, promoCode, pickupLat, pickupLng, destLat, destLng, paymentMethod } = req.body;
 
     const ride = await rideService.createRide({
-        user: req.user._id,
+        user: req.user,
         pickup,
         destination,
         vehicleType,
@@ -30,6 +30,7 @@ module.exports.createRide = async (req, res) => {
         pickupLng,
         destLat,
         destLng,
+        paymentMethod,
     });
 
     // Send response immediately without OTP

@@ -205,7 +205,7 @@ module.exports.getCaptainsInTheRadius = async (lat, lng, radiusKm) => {
         kycStatus: 'approved',
         socketId: { $ne: null },
         'location.coordinates': { $ne: [0, 0] },
-    }).select('-password -__v -bankAccount -loginAttempts -lockUntil').limit(10);
+    }).select('-password -__v -loginAttempts -lockUntil').limit(10);
 
     return fallback;
 };

@@ -44,12 +44,13 @@ const vehicles = [
   },
 ]
 
-const VehiclePanel = ({ pickup, destination, fare, vehicleType, selectVehicle, setVehiclePanel, createRide }) => {
+const VehiclePanel = ({ pickup, destination, fare, vehicleType, selectVehicle, setVehiclePanel, createRide, walletBalance = 0 }) => {
   const [promoCode, setPromoCode] = useState('')
   const [promoResult, setPromoResult] = useState(null)
   const [promoLoading, setPromoLoading] = useState(false)
   const [promoError, setPromoError] = useState('')
   const [showPromo, setShowPromo] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('cash')
 
   const selectedFare = promoResult ? promoResult.finalFare : (fare[vehicleType] || 0)
   const isSurge = fare?.isSurge
@@ -247,16 +248,25 @@ const VehiclePanel = ({ pickup, destination, fare, vehicleType, selectVehicle, s
       {/* Footer */}
       <footer className="absolute bottom-0 left-0 right-0 bg-white p-6 border-t border-gray-100 rounded-t-3xl shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
-              <i className="fa-regular fa-credit-card text-gray-600" />
+          <button 
+            onClick={() => setPaymentMethod(prev => prev === 'cash' ? 'wallet' : 'cash')}
+            className="flex items-center gap-3 p-2 -ml-2 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${paymentMethod === 'wallet' ? 'bg-orange-100' : 'bg-gray-100'}`}>
+              <i className={`fa-solid ${paymentMethod === 'wallet' ? 'fa-wallet text-orange-600' : 'fa-money-bill-wave text-gray-600'}`} />
             </div>
-            <div>
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Payment</p>
-              <p className="text-sm font-bold text-gray-800">Cash</p>
+            <div className="text-left">
+              <p className="text-[9px] font-bold text-gray-400 border-b border-dashed border-gray-300 pb-[1px] uppercase tracking-widest inline-flex items-center gap-1">
+                Payment <i className="fa-solid fa-chevron-down text-[8px]" />
+              </p>
+              <p className="text-sm font-bold text-gray-800 capitalize">{paymentMethod === 'wallet' ? `Wallet (₹${walletBalance})` : 'Cash'}</p>
             </div>
-          </div>
+          </button>
+          
           <div className="text-right">
+            <p className="text-[9px] font-bold text-gray-400 capitalize inline-block mr-2" style={{color: paymentMethod === 'wallet' && walletBalance < selectedFare ? 'red' : undefined}}>
+              {paymentMethod === 'wallet' && walletBalance < selectedFare ? 'Insufficient wallet balance' : ''}
+            </p>
             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">You Pay</p>
             <div className="flex items-baseline gap-1">
               {promoResult && (
@@ -267,8 +277,9 @@ const VehiclePanel = ({ pickup, destination, fare, vehicleType, selectVehicle, s
           </div>
         </div>
         <button
-          onClick={() => createRide(promoResult?.code)}
-          className="w-full bg-gradient-to-r from-[#b35f00] to-[#eb8300] py-4 rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-[0_4px_14px_0_rgba(235,131,0,0.39)]"
+          onClick={() => createRide(promoResult?.code, paymentMethod)}
+          disabled={paymentMethod === 'wallet' && walletBalance < selectedFare}
+          className="w-full bg-gradient-to-r from-[#b35f00] to-[#eb8300] py-4 rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-[0_4px_14px_0_rgba(235,131,0,0.39)] disabled:opacity-50 disabled:active:scale-100"
         >
           <span className="text-white font-bold text-lg">Confirm {vehicles.find(v => v.type === vehicleType)?.name}</span>
           <svg fill="none" height="20" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="20">

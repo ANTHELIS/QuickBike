@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { useJsApiLoader, GoogleMap } from '@react-google-maps/api'
+import { useJsApiLoader, GoogleMap, Marker } from '@react-google-maps/api'
 import axios from 'axios'
 
 const DEFAULT_CENTER = { lat: 22.5726, lng: 88.3639 } // Kolkata fallback
@@ -28,15 +28,39 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
 
   // Get user's current position for initial center
   const [mapCenter, setMapCenter] = useState(initialCenter || DEFAULT_CENTER)
+  const [userLocation, setUserLocation] = useState(null)
 
   useEffect(() => {
-    if (initialCenter) return // already have a center
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+    if (!navigator.geolocation) return
+
+    // Get initial position if none provided
+    if (!initialCenter) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      )
+    }
+
+    // Continuously watch user's physical location for the blue dot
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => {},
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      { enableHighAccuracy: true, maximumAge: 3000 }
     )
-  }, [])
+
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [initialCenter])
+
+  const userMarkerIcon = {
+    path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+    fillColor: '#3b82f6', // modern blue color for self
+    fillOpacity: 1,
+    strokeColor: '#ffffff',
+    strokeWeight: 2,
+    scale: 1.5,
+    anchor: { x: 12, y: 24 },
+  }
 
   const reverseGeocode = useCallback(async (lat, lng) => {
     setLoading(true)
@@ -123,8 +147,6 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
             options={{
               disableDefaultUI: true,
               gestureHandling: 'greedy',
-              // Keep all POIs, landmarks, institutions visible
-              // Only suppress overly aggressive business marker clutter
               styles: [
                 {
                   featureType: 'poi.business',
@@ -133,7 +155,17 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
                 },
               ],
             }}
-          />
+          >
+            {/* Live Blue Dot for User physical location */}
+            {userLocation && (
+              <Marker
+                position={userLocation}
+                icon={userMarkerIcon}
+                title="Your physical location"
+                zIndex={50} // Stay below the central pickup pin
+              />
+            )}
+          </GoogleMap>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-slate-200">
             <div className="w-8 h-8 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" />
@@ -165,6 +197,26 @@ const MapPicker = ({ fieldLabel = 'Pickup', onConfirm, onClose, initialCenter })
           isPickup ? 'border-slate-800' : 'border-orange-500'
         } ${isDragging ? 'hidden' : ''}`} />
       </div>
+
+      {/* ── GPS Recenter Button ── */}
+      <button
+        className="absolute right-4 bottom-48 z-30 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.15)] active:scale-95 transition-transform"
+        onClick={() => {
+          if (!navigator.geolocation) return
+          setLoading(true)
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const newCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+              setMapCenter(newCenter)
+              if (mapRef.current) mapRef.current.panTo(newCenter)
+            },
+            () => setLoading(false),
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+          )
+        }}
+      >
+        <i className="fa-solid fa-location-crosshairs text-slate-700 text-xl"></i>
+      </button>
 
       {/* ── Bottom Confirm Bar ── */}
       <div className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-[28px] px-6 pt-5 pb-10 shadow-[0_-10px_30px_rgba(0,0,0,0.15)]">

@@ -14,6 +14,8 @@ import Riding from './pages/Riding'
 import CaptainRiding from './pages/CaptainRiding'
 import UserRides from './pages/UserRides'
 import UserAccount from './pages/UserAccount'
+import UserPayment from './pages/UserPayment'
+import UserHelp from './pages/UserHelp'
 import CaptainAccount from './pages/CaptainAccount'
 
 // KYC Flow (captain)
@@ -51,6 +53,8 @@ const App = () => {
         <Route path='/user/logout' element={<UserProtectWrapper><UserLogout /></UserProtectWrapper>} />
         <Route path='/user/rides' element={<UserProtectWrapper><UserRides /></UserProtectWrapper>} />
         <Route path='/user/account' element={<UserProtectWrapper><UserAccount /></UserProtectWrapper>} />
+        <Route path='/user/payment' element={<UserProtectWrapper><UserPayment /></UserProtectWrapper>} />
+        <Route path='/user/help' element={<UserProtectWrapper><UserHelp /></UserProtectWrapper>} />
 
         {/* Captain (Driver) protected routes */}
         <Route path='/captain-home' element={<CaptainProtectWrapper><CaptainHome /></CaptainProtectWrapper>} />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback } from 'react'
+import React, { useEffect, useState, useContext, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
 import { SocketContext } from '../context/SocketContext'
@@ -16,10 +16,30 @@ const CaptainHome = () => {
   const [isOnline, setIsOnline] = useState(false)
   const [stats, setStats] = useState({ todayEarnings: 0, todayRides: 0, completedRides: 0 })
   const [statsLoading, setStatsLoading] = useState(false)
+  const [panelExpanded, setPanelExpanded] = useState(true)
+
+  const touchStartY = useRef(0)
 
   const { socket } = useContext(SocketContext)
   const { captain } = useContext(CaptainDataContext)
   const navigate = useNavigate()
+
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e) => {
+    const touchEndY = e.changedTouches[0].clientY
+    const deltaY = touchEndY - touchStartY.current
+
+    if (deltaY > 40) {
+      // Swiped down
+      setPanelExpanded(false)
+    } else if (deltaY < -40) {
+      // Swiped up
+      setPanelExpanded(true)
+    }
+  }
 
   // KYC Gate: redirect if not verified
   useEffect(() => {
@@ -183,19 +203,25 @@ const CaptainHome = () => {
       <main className="relative w-full max-w-[390px] h-[100dvh] bg-slate-100 overflow-hidden shadow-2xl flex flex-col">
         
         {/* Map Background */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 z-0">
           <LiveTracking />
         </div>
         <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/10 to-black/40 pointer-events-none" />
 
         {/* Top Navbar */}
         <header className="relative z-10 flex items-center justify-between px-6 py-4 pt-12">
-          <button
-            onClick={() => navigate('/captain/account')}
-            className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform"
-          >
-            <i className="fa-solid fa-user text-slate-800 text-sm" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/captain/account')}
+              className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform"
+            >
+              <i className="fa-solid fa-user text-slate-800 text-sm" />
+            </button>
+            <div className="h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center shadow-md px-3 border border-orange-100 cursor-pointer">
+              <i className="fa-solid fa-wallet text-orange-500 mr-2"></i>
+              <span className="font-bold text-sm text-slate-700">₹{captain?.wallet?.balance || 0}</span>
+            </div>
+          </div>
           
           {/* Online / Offline toggle pill */}
           <button
@@ -222,67 +248,86 @@ const CaptainHome = () => {
 
         {/* Status badge & metrics */}
         {!ridePopupPanel && !confirmRidePopupPanel && (
-          <div className="absolute bottom-6 left-4 right-4 z-20 animate-slide-up">
-            <div className="bg-white rounded-[32px] p-6 shadow-xl border border-gray-100 flex flex-col items-center">
-              {isOnline ? (
-                <>
-                  <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex justify-center items-center mb-3 relative">
-                    <div className="absolute inset-0 border-4 border-green-500/20 rounded-full animate-ping" />
-                    <i className="fa-solid fa-location-arrow text-2xl" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800 font-['Manrope']">Looking for rides</h3>
-                  <p className="text-sm font-medium text-gray-500 mt-1">Waiting for nearby requests...</p>
-                </>
-              ) : (
-                <>
-                  <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex justify-center items-center mb-3">
-                    <i className="fa-solid fa-moon text-2xl" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800 font-['Manrope']">You're offline</h3>
-                  <p className="text-sm font-medium text-gray-500 mt-1">Tap the button above to go online</p>
-                </>
-              )}
+          <div 
+            className={`absolute bottom-0 left-0 right-0 z-20 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${panelExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-3.5rem)]'}`}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="bg-white rounded-t-[32px] p-6 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-gray-100 flex flex-col items-center">
+              
+              {/* Drag Handle / Toggle */}
+              <div 
+                className="absolute top-0 left-0 w-full h-10 flex items-center justify-center cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
+                onClick={() => setPanelExpanded(!panelExpanded)}
+              >
+                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </div>
 
-              <div className="flex w-full mt-5 bg-slate-50 p-4 rounded-2xl border border-slate-100 gap-px">
-                <div className="flex-1 text-center border-r border-slate-200 pr-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Today</p>
-                  <p className="text-lg font-black text-gray-800">
-                    ₹{statsLoading ? '—' : (stats.todayEarnings || 0)}
-                  </p>
+              <div className="mt-4 flex flex-col items-center w-full transition-opacity duration-300">
+                {isOnline ? (
+                  <>
+                    <div className="w-16 h-16 bg-green-100 text-green-500 rounded-full flex justify-center items-center mb-3 relative">
+                      <div className="absolute inset-0 border-4 border-green-500/20 rounded-full animate-ping" />
+                      <i className="fa-solid fa-location-arrow text-2xl" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 font-['Manrope']">Looking for rides</h3>
+                    <p className="text-sm font-medium text-gray-500 mt-1">Waiting for nearby requests...</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex justify-center items-center mb-3">
+                      <i className="fa-solid fa-moon text-2xl" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 font-['Manrope']">You're offline</h3>
+                    <p className="text-sm font-medium text-gray-500 mt-1">Tap the button above to go online</p>
+                  </>
+                )}
+              </div>
+
+              {/* Stats Bottom Area (Hides when collapsed!) */}
+              <div className={`w-full overflow-hidden transition-all duration-300 ${panelExpanded ? 'max-h-[200px] opacity-100 mt-5' : 'max-h-0 opacity-0 mt-0 pointer-events-none'}`}>
+                <div className="flex w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 gap-px">
+                  <div className="flex-1 text-center border-r border-slate-200 pr-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Today</p>
+                    <p className="text-lg font-black text-gray-800">
+                      ₹{statsLoading ? '—' : (stats.todayEarnings || 0)}
+                    </p>
+                  </div>
+                  <div className="flex-1 text-center border-r border-slate-200 px-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Rides</p>
+                    <p className="text-lg font-black text-gray-800">
+                      {statsLoading ? '—' : (stats.todayRides || 0)}
+                    </p>
+                  </div>
+                  <div className="flex-1 text-center pl-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total</p>
+                    <p className="text-lg font-black text-gray-800">
+                      {statsLoading ? '—' : (stats.completedRides || 0)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 text-center border-r border-slate-200 px-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Rides</p>
-                  <p className="text-lg font-black text-gray-800">
-                    {statsLoading ? '—' : (stats.todayRides || 0)}
-                  </p>
-                </div>
-                <div className="flex-1 text-center pl-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total</p>
-                  <p className="text-lg font-black text-gray-800">
-                    {statsLoading ? '—' : (stats.completedRides || 0)}
-                  </p>
+
+                {/* Captain info strip */}
+                <div className="w-full mt-4 flex items-center gap-3 pt-4 border-t border-gray-100">
+                  <div className="w-10 h-10 rounded-full bg-slate-200 flex justify-center items-center">
+                    <i className="fa-solid fa-user text-slate-500 text-sm" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-bold text-gray-800 text-sm">
+                      {captain?.fullname?.firstname} {captain?.fullname?.lastname}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {captain?.vehicle?.color} {captain?.vehicle?.vehicleType?.toUpperCase()} · {captain?.vehicle?.plate}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
+                      {captain?.ratings?.average ? `${captain.ratings.average.toFixed(1)} ★` : '— ★'}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Captain info strip */}
-              <div className="w-full mt-4 flex items-center gap-3 pt-4 border-t border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-slate-200 flex justify-center items-center">
-                  <i className="fa-solid fa-user text-slate-500 text-sm" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-bold text-gray-800 text-sm">
-                    {captain?.fullname?.firstname} {captain?.fullname?.lastname}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {captain?.vehicle?.color} {captain?.vehicle?.vehicleType?.toUpperCase()} · {captain?.vehicle?.plate}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
-                    {captain?.ratings?.average ? `${captain.ratings.average.toFixed(1)} ★` : '— ★'}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}

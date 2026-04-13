@@ -584,3 +584,20 @@ module.exports.seedAdmin = async ({ name, email, password, role = 'super_admin' 
     console.log(`Admin created: ${email} (role: ${role})`);
     return admin;
 };
+
+// POST /admin/wallet/topup
+module.exports.topupWallet = async (req, res) => {
+    const { userId, userType, amount } = req.body;
+    if (!userId || !userType || !amount) {
+        throw new AppError('userId, userType, and amount are required', 400);
+    }
+    const model = userType === 'captain' ? require('../models/captain.model') : require('../models/user.model');
+    const user = await model.findByIdAndUpdate(
+        userId,
+        { $inc: { 'wallet.balance': Number(amount) } },
+        { new: true }
+    );
+    if (!user) throw new AppError(`${userType} not found`, 404);
+    logger.info('Admin topped up wallet', { userId, userType, amount, adminId: req.admin._id });
+    return success(res, { message: 'Wallet topped up', data: { balance: user.wallet.balance } });
+};

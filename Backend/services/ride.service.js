@@ -82,7 +82,7 @@ function generateOtp(digits) {
 // ─────────────────────────────────────────────────
 // Create Ride — with fare breakdown and job scheduling
 // ─────────────────────────────────────────────────
-module.exports.createRide = async ({ user, pickup, destination, vehicleType, promoCode, pickupLat, pickupLng, destLat, destLng }) => {
+module.exports.createRide = async ({ user, pickup, destination, vehicleType, promoCode, pickupLat, pickupLng, destLat, destLng, paymentMethod }) => {
     if (!user || !pickup || !destination || !vehicleType) {
         throw new AppError('All fields are required', 400);
     }
@@ -108,6 +108,14 @@ module.exports.createRide = async ({ user, pickup, destination, vehicleType, pro
     const originForMap = (pickupLat && pickupLng) ? `${parseFloat(pickupLat)},${parseFloat(pickupLng)}` : pickup;
     const destForMap = (destLat && destLng) ? `${parseFloat(destLat)},${parseFloat(destLng)}` : destination;
     
+    // Validate wallet payment BEFORE creating ride
+    if (paymentMethod === 'wallet') {
+        const walletBalance = user.wallet?.balance || 0;
+        if (walletBalance < finalFare) {
+            throw new AppError(`Insufficient wallet balance. Ride costs ₹${finalFare}, but you have ₹${walletBalance}.`, 402);
+        }
+    }
+    
     // Calculate fare breakdown for the selected vehicle type
     const distanceTime = await mapService.getDistanceTime(originForMap, destForMap);
     const fareBreakdown = calculateFare({
@@ -131,6 +139,10 @@ module.exports.createRide = async ({ user, pickup, destination, vehicleType, pro
         estimatedDistance: distanceTime.distance.value,
         estimatedDuration: distanceTime.duration.value,
         dispatchedAt: new Date(),
+        payment: {
+            method: paymentMethod || 'cash',
+            status: 'pending'
+        }
     };
 
     if (pickupLat && pickupLng) {
@@ -239,13 +251,28 @@ module.exports.endRide = async ({ rideId, captain }) => {
             $set: {
                 status: 'completed',
                 completedAt: new Date(),
-                'payment.status': ride.payment?.method === 'cash' ? 'captured' : ride.payment?.status,
+                'payment.status': (ride.payment?.method === 'cash' || ride.payment?.method === 'wallet') ? 'captured' : ride.payment?.status,
             },
         },
         { new: true }
     ).populate('user').populate('captain');
 
     if (!updated) throw new AppError('Ride could not be completed', 409);
+
+    // Process Wallet Transaction
+    if (updated.payment?.method === 'wallet') {
+        const userModel = require('../models/user.model');
+        try {
+            await userModel.findByIdAndUpdate(updated.user._id, {
+                $inc: { 'wallet.balance': -updated.fare }
+            });
+            await captainModel.findByIdAndUpdate(updated.captain._id, {
+                $inc: { 'wallet.balance': updated.fare }
+            });
+        } catch (err) {
+            logger.error('Failed to process wallet transaction', { rideId, error: err.message });
+        }
+    }
 
     // Update captain earnings
     try {
