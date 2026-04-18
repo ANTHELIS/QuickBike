@@ -11,6 +11,7 @@
 const userModel = require('../models/user.model');
 const captainModel = require('../models/captain.model');
 const rideModel = require('../models/ride.model');
+const captainDailyStatModel = require('../models/captainDailyStat.model');
 const { getRedisClient } = require('../utils/redis');
 const logger = require('../utils/logger');
 
@@ -43,6 +44,12 @@ function handleJoin(socket, io) {
             }
 
             socket.userType = userType;
+
+            // Track session start time in Redis for Online Hours
+            if (userType === 'captain') {
+                const redis = getRedisClient();
+                await redis.set(`session:${userId}`, Date.now());
+            }
 
             // ── Ride State Sync ──
             // On reconnect, send any active ride back to the client
@@ -253,6 +260,24 @@ function handleDisconnect(socket) {
 
         try {
             const redis = getRedisClient();
+
+            // Handle online hours logging for Captains
+            const sessionStartStr = await redis.get(`session:${socket.userId}`);
+            if (sessionStartStr) {
+                const sessionStart = parseInt(sessionStartStr, 10);
+                const durationSeconds = Math.round((Date.now() - sessionStart) / 1000);
+                
+                if (durationSeconds > 0) {
+                    // Update today's daily stat
+                    const dateString = new Date().toISOString().split('T')[0];
+                    await captainDailyStatModel.findOneAndUpdate(
+                        { captain: socket.userId, dateString },
+                        { $inc: { onlineSeconds: durationSeconds } },
+                        { upsert: true }
+                    );
+                }
+                await redis.del(`session:${socket.userId}`);
+            }
 
             // Remove presence
             await redis.del(`presence:${socket.userId}`);

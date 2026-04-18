@@ -405,3 +405,36 @@ module.exports.validatePromo = async (req, res) => {
 
     return success(res, { data: result });
 };
+
+// ─────────────────────────────────────────────────
+// GET /rides/stats
+// ─────────────────────────────────────────────────
+module.exports.getUserStats = async (req, res) => {
+    const { userType } = req.query; // 'user' or 'captain'
+
+    if (userType === 'captain') {
+        const captainId = req.captain._id;
+        const captainDailyStatModel = require('../models/captainDailyStat.model');
+
+        // Aggregating Daily Stats Tracker!
+        const dailyStats = await captainDailyStatModel.find({ captain: captainId });
+        let totalOnlineSeconds = 0;
+        let totalBonusesEarned = 0;
+
+        dailyStats.forEach(stat => {
+            totalOnlineSeconds += (stat.onlineSeconds || 0);
+            totalBonusesEarned += (stat.bonusesEarned || 0);
+        });
+
+        return success(res, {
+            data: {
+                totalOnlineSeconds,
+                totalOnlineHours: (totalOnlineSeconds / 3600).toFixed(1),
+                totalBonusesEarned
+            }
+        });
+    }
+
+    // Default for user
+    return success(res, { data: {} });
+};

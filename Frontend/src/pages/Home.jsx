@@ -8,8 +8,16 @@ import VehiclePanel from '../components/VehiclePanel'
 import LookingForDriver from '../components/LookingForDriver'
 import WaitingForDriver from '../components/WaitingForDriver'
 import MapPicker from '../components/MapPicker'
+import HomeDesktop from '../components/HomeDesktop'
 
 const Home = () => {
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const [pickup, setPickup] = useState('')
   const [destination, setDestination] = useState('')
   const [pickupCoords, setPickupCoords] = useState(null)
@@ -281,6 +289,19 @@ const Home = () => {
   }
 
   const isIdle = !vehiclePanel && !vehicleFound && !waitingForDriver
+
+  if (isDesktop) {
+    return <HomeDesktop 
+      pickup={pickup} destination={destination} setPickup={setPickup} setDestination={setDestination}
+      handleInputChange={handleInputChange} pickupCoords={pickupCoords} destCoords={destCoords}
+      user={user} navigate={navigate} findTrip={findTrip} createRide={createRide}
+      vehiclePanel={vehiclePanel} setVehiclePanel={setVehiclePanel} vehicleFound={vehicleFound}
+      waitingForDriver={waitingForDriver} ride={ride} fare={fare} fareLoading={fareLoading}
+      vehicleType={vehicleType} setVehicleType={setVehicleType} suggestions={suggestions}
+      selectSuggestion={selectSuggestion} activeField={activeField} setActiveField={setActiveField}
+      setMapPickerField={setMapPickerField} isCurrentLocation={isCurrentLocation}
+    /> 
+  }
 
   return (
     <div className="bg-black text-slate-900 flex justify-center items-center min-h-screen font-['Inter']">

@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
 import { UserDataContext } from '../context/UserContext'
+import UserAccountDesktop from '../components/UserAccountDesktop'
 
 /* ── tiny helpers ── */
 const ICON_MAP = { Home: 'fa-house', Work: 'fa-briefcase', Gym: 'fa-dumbbell', Other: 'fa-location-dot' }
@@ -11,6 +12,13 @@ const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('user_
 const UserAccount = () => {
   const navigate = useNavigate()
   const { user, setUser } = useContext(UserDataContext)
+
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   /* ── state ── */
   const [editOpen, setEditOpen] = useState(false)
@@ -104,6 +112,10 @@ const UserAccount = () => {
         <div className="w-8 h-8 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" />
       </div>
     )
+  }
+
+  if (isDesktop) {
+    return <UserAccountDesktop user={user} navigate={navigate} setEditOpen={setEditOpen} stats={stats} />;
   }
 
   return (

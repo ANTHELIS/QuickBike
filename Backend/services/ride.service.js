@@ -294,6 +294,37 @@ module.exports.endRide = async ({ rideId, captain }) => {
         });
     }
 
+    // ── Tiered Bonus Engine ──
+    try {
+        const captainDailyStatModel = require('../models/captainDailyStat.model');
+        const dateString = new Date().toISOString().split('T')[0];
+        
+        // Atomically increment completed rides for today
+        const dailyStat = await captainDailyStatModel.findOneAndUpdate(
+            { captain: captain._id, dateString },
+            { $inc: { completedRides: 1 } },
+            { new: true, upsert: true }
+        );
+
+        let bonusAwarded = 0;
+        // The Bonus Tiers:
+        if (dailyStat.completedRides === 1) bonusAwarded = 50;   // First ride of day
+        else if (dailyStat.completedRides === 5) bonusAwarded = 250;  // 5th ride milestone
+        else if (dailyStat.completedRides === 10) bonusAwarded = 500; // 10th ride milestone
+        
+        if (bonusAwarded > 0) {
+            await captainDailyStatModel.findByIdAndUpdate(dailyStat._id, {
+                $inc: { bonusesEarned: bonusAwarded }
+            });
+            // Credit captain wallet as well
+            await captainModel.findByIdAndUpdate(captain._id, {
+                $inc: { 'wallet.balance': bonusAwarded }
+            });
+        }
+    } catch (err) {
+        logger.error('Failed to process tiered bonuses', { rideId, error: err.message });
+    }
+
     return updated;
 };
 

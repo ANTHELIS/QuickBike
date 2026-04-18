@@ -16,23 +16,25 @@ import UserRides from './pages/UserRides'
 import UserAccount from './pages/UserAccount'
 import UserPayment from './pages/UserPayment'
 import UserHelp from './pages/UserHelp'
+import UserSafety from './pages/UserSafety'
+import UserOffers from './pages/UserOffers'
 import CaptainAccount from './pages/CaptainAccount'
 
 // KYC Flow (captain)
-import KycLanding  from './pages/captain-kyc/KycLanding'
-import KycStep1    from './pages/captain-kyc/KycStep1'
-import KycStep2    from './pages/captain-kyc/KycStep2'
-import KycStep3    from './pages/captain-kyc/KycStep3'
-import KycStep4    from './pages/captain-kyc/KycStep4'
-import KycPending  from './pages/captain-kyc/KycPending'
+import KycLanding from './pages/captain-kyc/KycLanding'
+import KycStep1 from './pages/captain-kyc/KycStep1'
+import KycStep2 from './pages/captain-kyc/KycStep2'
+import KycStep3 from './pages/captain-kyc/KycStep3'
+import KycStep4 from './pages/captain-kyc/KycStep4'
+import KycPending from './pages/captain-kyc/KycPending'
 
 // Admin Panel
-import AdminLogin     from './pages/admin/AdminLogin'
+import AdminLogin from './pages/admin/AdminLogin'
 import AdminDashboard, { AdminLayout } from './pages/admin/AdminDashboard'
-import KycList        from './pages/admin/KycList'
-import KycDetail      from './pages/admin/KycDetail'
-import AdminCaptains  from './pages/admin/AdminCaptains'
-import AdminUsers     from './pages/admin/AdminUsers'
+import KycList from './pages/admin/KycList'
+import KycDetail from './pages/admin/KycDetail'
+import AdminCaptains from './pages/admin/AdminCaptains'
+import AdminUsers from './pages/admin/AdminUsers'
 
 const App = () => {
   return (
@@ -55,6 +57,8 @@ const App = () => {
         <Route path='/user/account' element={<UserProtectWrapper><UserAccount /></UserProtectWrapper>} />
         <Route path='/user/payment' element={<UserProtectWrapper><UserPayment /></UserProtectWrapper>} />
         <Route path='/user/help' element={<UserProtectWrapper><UserHelp /></UserProtectWrapper>} />
+        <Route path='/safety' element={<UserProtectWrapper><UserSafety /></UserProtectWrapper>} />
+        <Route path='/offers' element={<UserProtectWrapper><UserOffers /></UserProtectWrapper>} />
 
         {/* Captain (Driver) protected routes */}
         <Route path='/captain-home' element={<CaptainProtectWrapper><CaptainHome /></CaptainProtectWrapper>} />

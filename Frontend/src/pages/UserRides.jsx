@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
 import { UserDataContext } from '../context/UserContext'
+import UserRidesDesktop from '../components/UserRidesDesktop'
 
 /* ── helpers ── */
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('user_token')}` })
@@ -82,6 +83,13 @@ const UserRides = () => {
   const navigate = useNavigate()
   const { user } = useContext(UserDataContext)
 
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const [rides, setRides]         = useState([])
   const [stats, setStats]         = useState(null)
   const [loading, setLoading]     = useState(true)
@@ -133,6 +141,10 @@ const UserRides = () => {
     { key: 'completed', label: 'Completed' },
     { key: 'cancelled', label: 'Cancelled' },
   ]
+
+  if (isDesktop) {
+    return <UserRidesDesktop rides={rides} stats={stats} loading={loading} statsLoading={statsLoading} filter={filter} setFilter={setFilter} page={page} setPage={setPage} pagination={pagination} error={error} navigate={navigate} user={user} />
+  }
 
   return (
     <div className="bg-slate-100 min-h-screen flex justify-center font-['Inter']">

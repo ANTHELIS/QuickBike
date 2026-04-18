@@ -1,8 +1,20 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
+import UserHelpDesktop from '../components/UserHelpDesktop'
 
 const UserHelp = () => {
   const navigate = useNavigate()
+
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  if (isDesktop) {
+    return <UserHelpDesktop navigate={navigate} />
+  }
 
   return (
     <div className="bg-slate-100 min-h-screen flex justify-center font-['Inter']">
