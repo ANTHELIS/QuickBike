@@ -288,13 +288,37 @@ const Home = () => {
     }
   }
 
+  const cancelRide = async () => {
+    const rideId = ride?._id
+    if (!rideId) {
+      // No ride id yet — just reset UI
+      setVehicleFound(false)
+      setWaitingForDriver(false)
+      setVehiclePanel(false)
+      setRide(null)
+      return
+    }
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/rides/${rideId}/cancel`,
+        { reason: 'Cancelled by user' },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('user_token')}` } }
+      )
+    } catch { /* ignore — backend may already have cancelled */ }
+    setVehicleFound(false)
+    setWaitingForDriver(false)
+    setVehiclePanel(false)
+    setRide(null)
+    showToast('Ride cancelled.')
+  }
+
   const isIdle = !vehiclePanel && !vehicleFound && !waitingForDriver
 
   if (isDesktop) {
     return <HomeDesktop 
       pickup={pickup} destination={destination} setPickup={setPickup} setDestination={setDestination}
       handleInputChange={handleInputChange} pickupCoords={pickupCoords} destCoords={destCoords}
-      user={user} navigate={navigate} findTrip={findTrip} createRide={createRide}
+      user={user} navigate={navigate} findTrip={findTrip} createRide={createRide} cancelRide={cancelRide}
       vehiclePanel={vehiclePanel} setVehiclePanel={setVehiclePanel} vehicleFound={vehicleFound}
       waitingForDriver={waitingForDriver} ride={ride} fare={fare} fareLoading={fareLoading}
       vehicleType={vehicleType} setVehicleType={setVehicleType} suggestions={suggestions}

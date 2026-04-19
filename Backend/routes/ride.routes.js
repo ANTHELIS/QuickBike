@@ -114,6 +114,13 @@ router.get(
     asyncHandler(rideController.getUserStats)
 );
 
+// Captain online hours stats
+router.get(
+    '/online-stats',
+    authMiddleware.authCaptain,
+    asyncHandler(rideController.getCaptainOnlineStats)
+);
+
 // Cancel ride
 router.post(
     '/:rideId/cancel',

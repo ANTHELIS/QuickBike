@@ -5,6 +5,7 @@ const userController = require('../controllers/user.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const asyncHandler = require('../utils/asyncHandler');
 const { authLimiter } = require('../middlewares/rateLimiter.middleware');
+const { uploadProfilePic } = require('../middlewares/upload.middleware');
 
 router.post(
     '/register',
@@ -52,5 +53,20 @@ router.post('/logout', authMiddleware.authUser, asyncHandler(userController.logo
 router.get('/saved-places', authMiddleware.authUser, asyncHandler(userController.getSavedPlaces));
 router.post('/saved-places', authMiddleware.authUser, asyncHandler(userController.upsertSavedPlace));
 router.delete('/saved-places/:label', authMiddleware.authUser, asyncHandler(userController.deleteSavedPlace));
+
+// ── Wallet ──
+router.get('/wallet', authMiddleware.authUser, asyncHandler(userController.getWallet));
+router.post('/wallet/topup', authMiddleware.authUser, asyncHandler(userController.topUpWallet));
+
+// ── Payment History ──
+router.get('/payment-history', authMiddleware.authUser, asyncHandler(userController.getPaymentHistory));
+
+// ── Payment Methods (UPI / Card) ──
+router.post('/payment-methods', authMiddleware.authUser, asyncHandler(userController.addPaymentMethod));
+router.delete('/payment-methods/:methodId', authMiddleware.authUser, asyncHandler(userController.deletePaymentMethod));
+router.patch('/payment-methods/:methodId/default', authMiddleware.authUser, asyncHandler(userController.setDefaultPaymentMethod));
+
+// ── Profile Picture ──
+router.post('/profile/picture', authMiddleware.authUser, uploadProfilePic, asyncHandler(userController.uploadProfilePicture));
 
 module.exports = router;

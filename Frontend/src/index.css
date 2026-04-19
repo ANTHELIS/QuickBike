@@ -20,6 +20,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body {
@@ -95,6 +96,53 @@ body {
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 400ms;
+}
+
+/* ── Dark Mode Tokens (captain) ───────────────── */
+/* ── Premium Deep Dark Mode (Captain App) ───────────────── */
+html.dark {
+  color-scheme: dark;
+  
+  /* Deep AMOLED/OLED-friendly darks */
+  --surface: #0a0a0c;
+  --surface-dim: #050505;
+  --surface-bright: #121214;
+  
+  /* Elevated Surfaces */
+  --surface-container-lowest: #161719;
+  --surface-container-low: #1c1d21;
+  --surface-container: #222428;
+  --surface-container-high: #2a2c31;
+  --surface-container-highest: #33353b;
+  
+  /* Typography */
+  --on-surface: #f3f4f6;
+  --on-surface-variant: #9ca3af;
+  
+  /* Brand Accents optimized for dark mode */
+  --primary: #f59e0b; 
+  --primary-container: #452a0a;
+  
+  /* Borders */
+  --outline: #374151;
+  --outline-variant: #1f2937;
+  
+  /* Deep Shadows */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.8);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.9);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,1);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,1);
+}
+
+/* Base resets */
+html.dark body {
+  background: var(--surface);
+  color: var(--on-surface);
+}
+
+/* Smooth theme transition */
+html, body, * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 /* ── Typography ───────────────────────────────── */

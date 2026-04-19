@@ -15,8 +15,10 @@ const CaptainProtectWrapper = ({ children }) => {
             return
         }
 
-        // Optimization: If captain is already in memory, avoid fetching profile again.
-        if (captain) {
+        // Skip re-fetch if captain is in memory AND has a valid (non-'none') kycStatus
+        // This prevents the stale kycStatus:'none' from misleading the KYC gate
+        const needsFresh = !captain || captain.kycStatus === 'none'
+        if (!needsFresh) {
             setIsLoading(false)
             return
         }

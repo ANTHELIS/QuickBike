@@ -41,7 +41,22 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
-
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/payments': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/promos': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/support': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
       '/health': {
         target: 'http://localhost:3000',
         changeOrigin: true,

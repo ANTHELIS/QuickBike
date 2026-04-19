@@ -19,6 +19,9 @@ import UserHelp from './pages/UserHelp'
 import UserSafety from './pages/UserSafety'
 import UserOffers from './pages/UserOffers'
 import CaptainAccount from './pages/CaptainAccount'
+import CaptainEarnings from './pages/CaptainEarnings'
+import CaptainHistory from './pages/CaptainHistory'
+import CaptainHelp from './pages/CaptainHelp'
 
 // KYC Flow (captain)
 import KycLanding from './pages/captain-kyc/KycLanding'
@@ -35,6 +38,9 @@ import KycList from './pages/admin/KycList'
 import KycDetail from './pages/admin/KycDetail'
 import AdminCaptains from './pages/admin/AdminCaptains'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminWallet from './pages/admin/AdminWallet'
+import AdminPromos from './pages/admin/AdminPromos'
+import AdminSupport from './pages/admin/AdminSupport'
 
 const App = () => {
   return (
@@ -48,7 +54,7 @@ const App = () => {
 
         {/* Active ride screens — no auth wrapper (state passed via navigate) */}
         <Route path='/riding' element={<Riding />} />
-        <Route path='/captain-riding' element={<CaptainRiding />} />
+        <Route path='/captain-riding' element={<CaptainProtectWrapper><CaptainRiding /></CaptainProtectWrapper>} />
 
         {/* User (Rider) protected routes */}
         <Route path='/home' element={<UserProtectWrapper><Home /></UserProtectWrapper>} />
@@ -64,6 +70,9 @@ const App = () => {
         <Route path='/captain-home' element={<CaptainProtectWrapper><CaptainHome /></CaptainProtectWrapper>} />
         <Route path='/captain/logout' element={<CaptainProtectWrapper><CaptainLogout /></CaptainProtectWrapper>} />
         <Route path='/captain/account' element={<CaptainProtectWrapper><CaptainAccount /></CaptainProtectWrapper>} />
+        <Route path='/captain/earnings' element={<CaptainProtectWrapper><CaptainEarnings /></CaptainProtectWrapper>} />
+        <Route path='/captain/history' element={<CaptainProtectWrapper><CaptainHistory /></CaptainProtectWrapper>} />
+        <Route path='/captain/help' element={<CaptainProtectWrapper><CaptainHelp /></CaptainProtectWrapper>} />
 
         {/* Captain KYC Flow — /captain/kyc is public (registration), steps need auth */}
         <Route path='/captain/kyc' element={<KycLanding />} />
@@ -81,6 +90,9 @@ const App = () => {
           <Route path='kyc/:id' element={<KycDetail />} />
           <Route path='captains' element={<AdminCaptains />} />
           <Route path='users' element={<AdminUsers />} />
+          <Route path='wallet' element={<AdminWallet />} />
+          <Route path='promos' element={<AdminPromos />} />
+          <Route path='support' element={<AdminSupport />} />
         </Route>
       </Routes>
     </div>

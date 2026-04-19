@@ -21,6 +21,8 @@ const rideRoutes    = require('./routes/ride.routes');
 const kycRoutes     = require('./routes/kyc.routes');
 const adminRoutes   = require('./routes/admin.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const promoRoutes   = require('./routes/promo.routes');
+const supportRoutes = require('./routes/support.routes');
 
 const app = express();
 
@@ -151,6 +153,8 @@ app.use('/rides',     rideRoutes);
 app.use('/kyc',       kycRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/payments',  paymentRoutes);
+app.use('/promos',    apiLimiter, promoRoutes);
+app.use('/support',   apiLimiter, supportRoutes);
 
 // Versioned routes (new endpoints go here)
 app.use('/api/v1/users',     userRoutes);
@@ -160,6 +164,8 @@ app.use('/api/v1/rides',     rideRoutes);
 app.use('/api/v1/kyc',       kycRoutes);
 app.use('/api/v1/admin',     adminRoutes);
 app.use('/api/v1/payments',  paymentRoutes);
+app.use('/api/v1/promos',    promoRoutes);
+app.use('/api/v1/support',   supportRoutes);
 
 // ──────────────────────────────────────────────
 // 11. 404 handler

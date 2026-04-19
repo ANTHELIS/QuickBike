@@ -248,7 +248,7 @@ module.exports.cancelRide = async (req, res) => {
 module.exports.getRideHistory = async (req, res) => {
     const { userType } = req.query;
     const page = parseInt(req.query.page) || 1;
-    const limit = Math.min(parseInt(req.query.limit) || 20, 50); // cap at 50
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100); // cap at 100
     const status = req.query.status;
 
     let filter = {};
@@ -407,34 +407,26 @@ module.exports.validatePromo = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────
-// GET /rides/stats
+// GET /rides/stats — CAPTAIN ONLINE HOURS (bonus endpoint)
 // ─────────────────────────────────────────────────
-module.exports.getUserStats = async (req, res) => {
-    const { userType } = req.query; // 'user' or 'captain'
+module.exports.getCaptainOnlineStats = async (req, res) => {
+    if (!req.captain) throw new AppError('Captain authentication required', 401);
+    const captainId = req.captain._id;
+    const captainDailyStatModel = require('../models/captainDailyStat.model');
+    const dailyStats = await captainDailyStatModel.find({ captain: captainId });
 
-    if (userType === 'captain') {
-        const captainId = req.captain._id;
-        const captainDailyStatModel = require('../models/captainDailyStat.model');
+    let totalOnlineSeconds = 0;
+    let totalBonusesEarned = 0;
+    dailyStats.forEach(stat => {
+        totalOnlineSeconds += (stat.onlineSeconds || 0);
+        totalBonusesEarned += (stat.bonusesEarned || 0);
+    });
 
-        // Aggregating Daily Stats Tracker!
-        const dailyStats = await captainDailyStatModel.find({ captain: captainId });
-        let totalOnlineSeconds = 0;
-        let totalBonusesEarned = 0;
-
-        dailyStats.forEach(stat => {
-            totalOnlineSeconds += (stat.onlineSeconds || 0);
-            totalBonusesEarned += (stat.bonusesEarned || 0);
-        });
-
-        return success(res, {
-            data: {
-                totalOnlineSeconds,
-                totalOnlineHours: (totalOnlineSeconds / 3600).toFixed(1),
-                totalBonusesEarned
-            }
-        });
-    }
-
-    // Default for user
-    return success(res, { data: {} });
+    return success(res, {
+        data: {
+            totalOnlineSeconds,
+            totalOnlineHours: (totalOnlineSeconds / 3600).toFixed(1),
+            totalBonusesEarned,
+        }
+    });
 };

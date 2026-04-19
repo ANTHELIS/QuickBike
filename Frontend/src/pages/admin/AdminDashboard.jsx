@@ -1,83 +1,153 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate, NavLink, Outlet } from 'react-router'
-import axios from 'axios'
+import React, { useState, useEffect } from "react";
+import { useNavigate, NavLink, Outlet } from "react-router";
+import axios from "axios";
 
-const adminHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('admin_token')}` })
+const adminHeader = () => ({
+  Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+});
 
 // ── Sidebar layout ──────────────────────────────────────────────
 
 export const AdminLayout = ({ children }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [open, setOpen] = React.useState(false); // mobile sidebar open
 
   const logout = () => {
-    localStorage.removeItem('admin_token')
-    navigate('/admin/login')
-  }
+    localStorage.removeItem("admin_token");
+    navigate("/admin/login");
+  };
 
   const nav = [
-    { icon: 'fa-gauge', label: 'Dashboard', to: '/admin' },
-    { icon: 'fa-clipboard-check', label: 'KYC Review', to: '/admin/kyc' },
-    { icon: 'fa-motorcycle', label: 'Captains', to: '/admin/captains' },
-    { icon: 'fa-users', label: 'Users', to: '/admin/users' },
-  ]
+    { icon: "fa-gauge", label: "Dashboard", to: "/admin" },
+    { icon: "fa-clipboard-check", label: "KYC Review", to: "/admin/kyc" },
+    { icon: "fa-motorcycle", label: "Captains", to: "/admin/captains" },
+    { icon: "fa-users", label: "Users", to: "/admin/users" },
+    { icon: "fa-coins", label: "Wallets", to: "/admin/wallet" },
+    { icon: "fa-tag", label: "Offers & Promos", to: "/admin/promos" },
+    { icon: "fa-headset", label: "Support Inbox", to: "/admin/support" },
+  ];
+
+  const SidebarContent = () => (
+    <>
+      <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-800">
+        <div className="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center shrink-0">
+          <i className="fa-solid fa-bolt text-white text-base" />
+        </div>
+        <div>
+          <p className="font-black text-white text-sm">QuickBike</p>
+          <p className="text-slate-500 text-[10px] font-semibold">
+            Admin Panel
+          </p>
+        </div>
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setOpen(false)}
+          className="ml-auto lg:hidden text-slate-400 hover:text-white transition"
+        >
+          <i className="fa-solid fa-xmark text-lg" />
+        </button>
+      </div>
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {nav.map((n) => (
+          <NavLink
+            key={n.to}
+            to={n.to}
+            end={n.to === "/admin"}
+            onClick={() => setOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                isActive
+                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+              }`
+            }
+          >
+            <i className={`fa-solid ${n.icon} w-4`} />
+            {n.label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="px-3 pb-6">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
+        >
+          <i className="fa-solid fa-right-from-bracket w-4" />
+          Logout
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 font-['Inter'] flex">
-      {/* Sidebar */}
-      <aside className="w-56 bg-slate-900/80 border-r border-slate-800 flex flex-col shrink-0">
-        <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-800">
-          <div className="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center">
-            <i className="fa-solid fa-bolt text-white text-base" />
-          </div>
-          <div>
-            <p className="font-black text-white text-sm">QuickBike</p>
-            <p className="text-slate-500 text-[10px] font-semibold">Admin Panel</p>
-          </div>
-        </div>
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {nav.map(n => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.to === '/admin'}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  isActive ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                }`
-              }
-            >
-              <i className={`fa-solid ${n.icon} w-4`} />
-              {n.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="px-3 pb-6">
-          <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all">
-            <i className="fa-solid fa-right-from-bracket w-4" />
-            Logout
-          </button>
-        </div>
+      {/* ── Desktop sidebar (always visible ≥lg) ── */}
+      <aside className="hidden lg:flex w-56 bg-slate-900/80 border-r border-slate-800 flex-col shrink-0">
+        <SidebarContent />
       </aside>
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
+
+      {/* ── Mobile slide-over drawer ── */}
+      {open && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setOpen(false)}
+          />
+          {/* Drawer */}
+          <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col lg:hidden shadow-2xl">
+            <SidebarContent />
+          </aside>
+        </>
+      )}
+
+      {/* ── Main area ── */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Mobile top bar */}
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
+          <button
+            onClick={() => setOpen(true)}
+            className="text-slate-400 hover:text-white transition"
+          >
+            <i className="fa-solid fa-bars text-lg" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center">
+              <i className="fa-solid fa-bolt text-white text-xs" />
+            </div>
+            <span className="font-black text-white text-sm">
+              QuickBike Admin
+            </span>
+          </div>
+        </div>
+
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
-  )
-}
+  );
+};
 
 // ── Dashboard ───────────────────────────────────────────────────
 const AdminDashboard = () => {
-  const navigate = useNavigate()
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem('admin_token')
-        if (!token) { navigate('/admin/login'); return }
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/admin/stats`, { headers: adminHeader() })
-        const d = res.data.data || res.data
+        const token = localStorage.getItem("admin_token");
+        if (!token) {
+          navigate("/admin/login");
+          return;
+        }
+        const res = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/api/admin/stats`,
+          { headers: adminHeader() },
+        );
+        const d = res.data.data || res.data;
         // Flatten the nested response into the shape our cards expect
         setStats({
           totalUsers: d.users?.total ?? d.totalUsers ?? 0,
@@ -89,46 +159,104 @@ const AdminDashboard = () => {
           activeRides: d.rides?.active ?? d.activeRides ?? 0,
           completedToday: d.rides?.completedToday ?? 0,
           todayRevenue: d.revenue?.today ?? 0,
-        })
+        });
       } catch (err) {
-        if (err.response?.status === 401) navigate('/admin/login')
-      } finally { setLoading(false) }
-    }
-    fetchStats()
-  }, [navigate])
+        if (err.response?.status === 401) navigate("/admin/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, [navigate]);
 
-  const cards = stats ? [
-    { icon: 'fa-users', label: 'Total Users', value: stats.totalUsers, color: 'bg-blue-500', light: 'bg-blue-500/10 text-blue-400' },
-    { icon: 'fa-motorcycle', label: 'Total Captains', value: stats.totalCaptains, color: 'bg-green-500', light: 'bg-green-500/10 text-green-400' },
-    { icon: 'fa-clipboard-check', label: 'Pending KYC', value: stats.pendingKyc, color: 'bg-orange-500', light: 'bg-orange-500/10 text-orange-400', cta: () => navigate('/admin/kyc') },
-    { icon: 'fa-route', label: 'Active Rides', value: stats.activeRides, color: 'bg-purple-500', light: 'bg-purple-500/10 text-purple-400' },
-    { icon: 'fa-check-circle', label: 'Approved KYC', value: stats.approvedKyc, color: 'bg-emerald-500', light: 'bg-emerald-500/10 text-emerald-400' },
-    { icon: 'fa-x-circle', label: 'Rejected KYC', value: stats.rejectedKyc, color: 'bg-red-500', light: 'bg-red-500/10 text-red-400' },
-  ] : []
+  const cards = stats
+    ? [
+        {
+          icon: "fa-users",
+          label: "Total Users",
+          value: stats.totalUsers,
+          color: "bg-blue-500",
+          light: "bg-blue-500/10 text-blue-400",
+        },
+        {
+          icon: "fa-motorcycle",
+          label: "Total Captains",
+          value: stats.totalCaptains,
+          color: "bg-green-500",
+          light: "bg-green-500/10 text-green-400",
+        },
+        {
+          icon: "fa-clipboard-check",
+          label: "Pending KYC",
+          value: stats.pendingKyc,
+          color: "bg-orange-500",
+          light: "bg-orange-500/10 text-orange-400",
+          cta: () => navigate("/admin/kyc"),
+        },
+        {
+          icon: "fa-route",
+          label: "Active Rides",
+          value: stats.activeRides,
+          color: "bg-purple-500",
+          light: "bg-purple-500/10 text-purple-400",
+        },
+        {
+          icon: "fa-check-circle",
+          label: "Approved KYC",
+          value: stats.approvedKyc,
+          color: "bg-emerald-500",
+          light: "bg-emerald-500/10 text-emerald-400",
+        },
+        {
+          icon: "fa-x-circle",
+          label: "Rejected KYC",
+          value: stats.rejectedKyc,
+          color: "bg-red-500",
+          light: "bg-red-500/10 text-red-400",
+        },
+      ]
+    : [];
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-white">Dashboard</h1>
-        <p className="text-slate-400 text-sm mt-1">Realtime overview of your platform</p>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-black text-white">Dashboard</h1>
+        <p className="text-slate-400 text-sm mt-1">
+          Realtime overview of your platform
+        </p>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-3 gap-4">
-          {[1,2,3,4,5,6].map(i => <div key={i} className="bg-slate-800 rounded-2xl h-28 animate-pulse" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="bg-slate-800 rounded-2xl h-24 sm:h-28 animate-pulse"
+            />
+          ))}
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {cards.map(c => (
-            <div key={c.label} onClick={c.cta} className={`bg-slate-900 border border-slate-800 rounded-2xl p-5 ${c.cta ? 'cursor-pointer hover:border-orange-500/50 transition-colors' : ''}`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          {cards.map((c) => (
+            <div
+              key={c.label}
+              onClick={c.cta}
+              className={`bg-slate-900 border border-slate-800 rounded-2xl p-5 ${c.cta ? "cursor-pointer hover:border-orange-500/50 transition-colors" : ""}`}
+            >
               <div className="flex items-center justify-between mb-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm ${c.light}`}>
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm ${c.light}`}
+                >
                   <i className={`fa-solid ${c.icon}`} />
                 </div>
-                {c.cta && <i className="fa-solid fa-arrow-right text-slate-600 text-xs" />}
+                {c.cta && (
+                  <i className="fa-solid fa-arrow-right text-slate-600 text-xs" />
+                )}
               </div>
               <p className="text-3xl font-black text-white">{c.value}</p>
-              <p className="text-slate-400 text-xs font-semibold mt-1">{c.label}</p>
+              <p className="text-slate-400 text-xs font-semibold mt-1">
+                {c.label}
+              </p>
             </div>
           ))}
         </div>
@@ -137,17 +265,35 @@ const AdminDashboard = () => {
       {/* Quick actions */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
         <p className="text-white font-bold text-sm mb-3">Quick Actions</p>
-        <div className="flex gap-3">
-          <button onClick={() => navigate('/admin/kyc?status=pending')} className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-500/20 transition-colors">
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate("/admin/kyc?status=pending")}
+            className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-500/20 transition-colors"
+          >
             <i className="fa-solid fa-clipboard-check" /> Review Pending KYC
           </button>
-          <button onClick={() => navigate('/admin/captains')} className="flex items-center gap-2 bg-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors">
+          <button
+            onClick={() => navigate("/admin/captains")}
+            className="flex items-center gap-2 bg-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors"
+          >
             <i className="fa-solid fa-motorcycle" /> View Captains
+          </button>
+          <button
+            onClick={() => navigate("/admin/wallet")}
+            className="flex items-center gap-2 bg-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors"
+          >
+            <i className="fa-solid fa-coins" /> Manage Wallets
+          </button>
+          <button
+            onClick={() => navigate("/admin/promos")}
+            className="flex items-center gap-2 bg-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors"
+          >
+            <i className="fa-solid fa-tag" /> Manage Promos
           </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminDashboard
+export default AdminDashboard;

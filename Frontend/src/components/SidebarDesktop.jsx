@@ -51,7 +51,7 @@ const SidebarDesktop = ({ user, navigate }) => {
           <p className="text-[13px] font-bold text-white truncate">
              {user?.fullname?.firstname || 'QuickBike'} {user?.fullname?.lastname || ''}
           </p>
-          <p className="text-[11px] text-gray-500 font-medium">Premium Rider</p>
+          <p className="text-[11px] text-gray-500 font-medium">User</p>
         </div>
       </div>
     </aside>

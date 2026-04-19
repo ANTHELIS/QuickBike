@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const HeaderDesktop = ({ title = '', subtitle = '', showSearch = true }) => {
+const HeaderDesktop = ({ title = '', subtitle = '', showSearch = true, user }) => {
   // Derive icon state from the actual DOM class — no stale React state
   const [isDark, setIsDark] = useState(
     () => document.documentElement.classList.contains('dark')
@@ -82,10 +82,18 @@ const HeaderDesktop = ({ title = '', subtitle = '', showSearch = true }) => {
          
          <div className="flex items-center gap-3 cursor-pointer group">
             <div className="w-10 h-10 rounded-[10px] bg-slate-200 dark:bg-slate-800 border border-gray-300 dark:border-[#333] flex items-center justify-center overflow-hidden shadow-sm">
-               <img src="https://i.pravatar.cc/100?img=11" alt="Avatar" className="w-full h-full object-cover" />
+               {user ? (
+                 <span className="text-[15px] font-bold text-gray-700 dark:text-gray-200 uppercase">
+                   {(user.fullname?.firstname?.[0] || '') + (user.fullname?.lastname?.[0] || '')}
+                 </span>
+               ) : (
+                 <i className="fa-solid fa-user text-gray-400 text-sm"></i>
+               )}
             </div>
             <div className="hidden lg:flex items-center gap-2">
-               <span className="text-[14px] text-gray-800 dark:text-gray-200 font-medium">Alexander Smith</span>
+               <span className="text-[14px] text-gray-800 dark:text-gray-200 font-medium">
+                 {user ? `${user.fullname?.firstname || ''} ${user.fullname?.lastname || ''}`.trim() : 'Loading...'}
+               </span>
                <i className="fa-solid fa-chevron-down text-[10px] text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-colors"></i>
             </div>
          </div>

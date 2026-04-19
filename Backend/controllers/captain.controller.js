@@ -115,3 +115,61 @@ module.exports.updateStatus = async (req, res) => {
 
     res.status(200).json({ message: `Status updated to ${status}`, status });
 };
+
+module.exports.updateProfile = async (req, res) => {
+    const { firstname, lastname, phone, vehicleModel, vehicleColor, vehiclePlate } = req.body;
+    
+    const updateData = {};
+    if (firstname) updateData['fullname.firstname'] = firstname;
+    if (lastname !== undefined) updateData['fullname.lastname'] = lastname;
+    if (phone) updateData.phone = phone;
+    if (vehicleModel) updateData['vehicle.model'] = vehicleModel;
+    if (vehicleColor) updateData['vehicle.color'] = vehicleColor;
+    if (vehiclePlate) updateData['vehicle.plate'] = vehiclePlate.toUpperCase();
+
+    const updatedCaptain = await captainModel.findByIdAndUpdate(
+        req.captain._id,
+        { $set: updateData },
+        { new: true, runValidators: true }
+    );
+
+    res.status(200).json(updatedCaptain);
+};
+
+// ─────────────────────────────────────────────────
+// POST /captains/profile/picture  — upload profile picture to Cloudinary
+// ─────────────────────────────────────────────────
+module.exports.uploadProfilePicture = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const { path: url, filename: publicId } = req.file;
+
+    const captain = await captainModel.findByIdAndUpdate(
+        req.captain._id,
+        { $set: { 'profilePicture.url': url, 'profilePicture.publicId': publicId } },
+        { new: true }
+    );
+
+    res.status(200).json({ captain, profilePictureUrl: url });
+};
+
+// ─────────────────────────────────────────────────
+// POST /captains/vehicle/image  — upload vehicle image to Cloudinary
+// ─────────────────────────────────────────────────
+module.exports.uploadVehicleImage = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const { path: url, filename: publicId } = req.file;
+
+    const captain = await captainModel.findByIdAndUpdate(
+        req.captain._id,
+        { $set: { 'vehicle.image.url': url, 'vehicle.image.publicId': publicId } },
+        { new: true }
+    );
+
+    res.status(200).json({ captain, vehicleImageUrl: url });
+};

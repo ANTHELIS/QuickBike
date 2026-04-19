@@ -45,6 +45,12 @@ const captainSchema = new mongoose.Schema(
             default: null,
         },
 
+        // ── Profile Picture ──
+        profilePicture: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' },
+        },
+
         // ── Push Notifications ──
         fcmToken: {
             type: String,
@@ -94,6 +100,11 @@ const captainSchema = new mongoose.Schema(
                 type: Number,
                 min: 2000,
                 max: new Date().getFullYear() + 1,
+            },
+            // ── Vehicle Image ──
+            image: {
+                url: { type: String, default: '' },
+                publicId: { type: String, default: '' },
             },
         },
 

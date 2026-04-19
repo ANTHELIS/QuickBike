@@ -43,6 +43,15 @@ router.post('/surge-zones',     requireRole('super_admin', 'admin'), asyncHandle
 router.delete('/surge-zones/:id', requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.deleteSurgeZone));
 
 // ── Wallet Management ──
-router.post('/wallet/topup', requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.topupWallet));
+router.post('/wallet/topup',   requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.topupWallet));
+router.post('/wallet/adjust',  requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.adjustWallet));
+router.get('/wallet/balances', asyncHandler(adminCtrl.listWalletBalances));
+
+// ── Promo / Offers Management ──
+router.get('/promos',              asyncHandler(adminCtrl.listPromos));
+router.post('/promos',             requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.createPromo));
+router.patch('/promos/:id',        requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.updatePromo));
+router.patch('/promos/:id/toggle', requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.togglePromo));
+router.delete('/promos/:id',       requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.deletePromo));
 
 module.exports = router;

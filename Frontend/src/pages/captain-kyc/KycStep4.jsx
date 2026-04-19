@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
+import { CaptainDataContext } from '../../context/CapatainContext'
 
 const KycStep4 = () => {
   const navigate = useNavigate()
+  const { setCaptain } = useContext(CaptainDataContext)
   const [kyc, setKyc] = useState(null)
   const [agreed, setAgreed] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -29,7 +31,15 @@ const KycStep4 = () => {
       await axios.post(`${import.meta.env.VITE_BASE_URL}/kyc/submit`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('captain_token')}` }
       })
-      navigate('/captain/kyc/pending')
+      // Re-fetch profile so context has updated kycStatus:'pending'
+      // before CaptainHome's gate runs
+      try {
+        const profileRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/captains/profile`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('captain_token')}` }
+        })
+        setCaptain(profileRes.data.captain)
+      } catch { /* non-fatal; home will re-fetch via CaptainProtectWrapper */ }
+      navigate('/captain-home')   // home shows KYC-pending banner
     } catch (err) {
       setError(err.response?.data?.message || 'Submission failed.')
     } finally { setLoading(false) }

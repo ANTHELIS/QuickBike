@@ -149,3 +149,148 @@ module.exports.deleteSavedPlace = async (req, res) => {
     await user.save();
     res.status(200).json({ savedPlaces: user.savedPlaces });
 };
+
+// ─────────────────────────────────────────────────
+// GET /users/wallet  — wallet balance + payment methods
+// ─────────────────────────────────────────────────
+module.exports.getWallet = async (req, res) => {
+    const user = await userModel.findById(req.user._id).select('wallet paymentMethods');
+    res.status(200).json({
+        wallet: user.wallet,
+        paymentMethods: user.paymentMethods || [],
+    });
+};
+
+// ─────────────────────────────────────────────────
+// POST /users/wallet/topup  — top up wallet balance
+// ─────────────────────────────────────────────────
+module.exports.topUpWallet = async (req, res) => {
+    const { amount } = req.body;
+    const parsedAmount = parseFloat(amount);
+
+    if (!parsedAmount || parsedAmount <= 0 || parsedAmount > 50000) {
+        return res.status(400).json({ message: 'Amount must be between ₹1 and ₹50,000' });
+    }
+
+    const user = await userModel.findByIdAndUpdate(
+        req.user._id,
+        { $inc: { 'wallet.balance': parsedAmount } },
+        { new: true }
+    ).select('wallet');
+
+    res.status(200).json({ wallet: user.wallet, message: `₹${parsedAmount} added to wallet` });
+};
+
+// ─────────────────────────────────────────────────
+// GET /users/payment-history  — paginated ride payment history
+// ─────────────────────────────────────────────────
+module.exports.getPaymentHistory = async (req, res) => {
+    const paymentModel = require('../models/payment.model');
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 15, 50);
+
+    const [payments, total] = await Promise.all([
+        paymentModel
+            .find({ user: req.user._id })
+            .populate('ride', 'pickup destination fare vehicleType createdAt')
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .lean(),
+        paymentModel.countDocuments({ user: req.user._id }),
+    ]);
+
+    res.status(200).json({ data: payments, total, page, limit });
+};
+
+// ─────────────────────────────────────────────────
+// POST /users/payment-methods  — add UPI or virtual card ID
+// ─────────────────────────────────────────────────
+module.exports.addPaymentMethod = async (req, res) => {
+    const { type, label, value } = req.body;
+
+    if (!type || !['upi', 'card'].includes(type)) {
+        return res.status(400).json({ message: 'type must be "upi" or "card"' });
+    }
+    if (!value || !value.trim()) {
+        return res.status(400).json({ message: 'value is required' });
+    }
+
+    // UPI format validation
+    if (type === 'upi' && !/^[\w.\-]{2,256}@[a-zA-Z]{2,64}$/.test(value.trim())) {
+        return res.status(400).json({ message: 'Invalid UPI ID format (e.g. name@upi)' });
+    }
+
+    const user = await userModel.findById(req.user._id).select('paymentMethods');
+
+    // Prevent duplicates
+    const exists = user.paymentMethods.some(m => m.value === value.trim());
+    if (exists) {
+        return res.status(409).json({ message: 'This payment method is already saved' });
+    }
+
+    if (user.paymentMethods.length >= 10) {
+        return res.status(400).json({ message: 'Maximum 10 payment methods allowed' });
+    }
+
+    // First method becomes default automatically
+    const isDefault = user.paymentMethods.length === 0;
+    user.paymentMethods.push({ type, label: label || value, value: value.trim(), isDefault });
+    await user.save();
+
+    res.status(201).json({ paymentMethods: user.paymentMethods });
+};
+
+// ─────────────────────────────────────────────────
+// DELETE /users/payment-methods/:methodId  — remove payment method
+// ─────────────────────────────────────────────────
+module.exports.deletePaymentMethod = async (req, res) => {
+    const { methodId } = req.params;
+    const user = await userModel.findById(req.user._id).select('paymentMethods');
+    const before = user.paymentMethods.length;
+    user.paymentMethods = user.paymentMethods.filter(m => m._id.toString() !== methodId);
+    if (user.paymentMethods.length === before) {
+        return res.status(404).json({ message: 'Payment method not found' });
+    }
+    // Re-assign default if deleted method was default
+    if (user.paymentMethods.length > 0 && !user.paymentMethods.some(m => m.isDefault)) {
+        user.paymentMethods[0].isDefault = true;
+    }
+    await user.save();
+    res.status(200).json({ paymentMethods: user.paymentMethods });
+};
+
+// ─────────────────────────────────────────────────
+// PATCH /users/payment-methods/:methodId/default  — set as default
+// ─────────────────────────────────────────────────
+module.exports.setDefaultPaymentMethod = async (req, res) => {
+    const { methodId } = req.params;
+    const user = await userModel.findById(req.user._id).select('paymentMethods');
+    let found = false;
+    user.paymentMethods.forEach(m => {
+        m.isDefault = m._id.toString() === methodId;
+        if (m.isDefault) found = true;
+    });
+    if (!found) return res.status(404).json({ message: 'Payment method not found' });
+    await user.save();
+    res.status(200).json({ paymentMethods: user.paymentMethods });
+};
+
+// ─────────────────────────────────────────────────
+// POST /users/profile/picture  — upload profile picture to Cloudinary
+// ─────────────────────────────────────────────────
+module.exports.uploadProfilePicture = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const { path: url, filename: publicId } = req.file;
+
+    const user = await userModel.findByIdAndUpdate(
+        req.user._id,
+        { $set: { 'profilePicture.url': url, 'profilePicture.publicId': publicId } },
+        { new: true }
+    );
+
+    res.status(200).json({ user, profilePictureUrl: url });
+};

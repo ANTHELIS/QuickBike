@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router'
-import UserHelpDesktop from '../components/UserHelpDesktop'
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router';
+import { UserDataContext } from '../context/UserContext';
+import UserHelpDesktop from '../components/UserHelpDesktop';
 
 const UserHelp = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { user } = useContext(UserDataContext);
 
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 768)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (isDesktop) {
-    return <UserHelpDesktop navigate={navigate} />
+    return <UserHelpDesktop navigate={navigate} user={user} />;
   }
 
   return (
@@ -51,7 +53,7 @@ const UserHelp = () => {
           </div>
 
           {/* Safety Emergency Banner */}
-          <div className="bg-red-50 border border-red-100 rounded-2xl p-4 mb-8 flex items-center gap-4 active:scale-[0.98] transition-transform cursor-pointer">
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-4 mb-8 flex items-center gap-4 active:scale-[0.98] transition-transform cursor-pointer" onClick={() => navigate('/safety')}>
             <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
               <i className="fa-solid fa-shield-halved text-sm"></i>
             </div>
@@ -85,7 +87,7 @@ const UserHelp = () => {
 
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default UserHelp
+export default UserHelp;

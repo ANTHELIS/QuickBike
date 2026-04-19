@@ -22,6 +22,7 @@ const Captainlogin = () => {
       if (response.status === 200) {
         setCaptain(response.data.captain)
         localStorage.setItem('captain_token', response.data.token)
+        // Always go to captain-home; the home page handles KYC state (pending/rejected/approved)
         navigate('/captain-home')
       }
     } catch (err) {

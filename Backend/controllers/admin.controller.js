@@ -601,3 +601,150 @@ module.exports.topupWallet = async (req, res) => {
     logger.info('Admin topped up wallet', { userId, userType, amount, adminId: req.admin._id });
     return success(res, { message: 'Wallet topped up', data: { balance: user.wallet.balance } });
 };
+
+// POST /admin/wallet/adjust — credit or debit any amount
+module.exports.adjustWallet = async (req, res) => {
+    const { userId, userType, amount, note } = req.body;
+    if (!userId || !userType || amount === undefined) {
+        throw new AppError('userId, userType, and amount are required', 400);
+    }
+    const delta = Number(amount); // positive = credit, negative = debit
+    if (isNaN(delta)) throw new AppError('amount must be a number', 400);
+
+    const model = userType === 'captain' ? require('../models/captain.model') : require('../models/user.model');
+    const doc = await model.findById(userId);
+    if (!doc) throw new AppError(`${userType} not found`, 404);
+
+    const newBalance = (doc.wallet?.balance || 0) + delta;
+    if (newBalance < 0) throw new AppError('Adjustment would result in negative balance', 400);
+
+    doc.wallet = doc.wallet || {};
+    doc.wallet.balance = newBalance;
+    await doc.save();
+
+    logger.info('Admin wallet adjusted', { userId, userType, delta, note, adminId: req.admin._id });
+    return success(res, {
+        message: `Wallet ${delta >= 0 ? 'credited' : 'debited'} successfully`,
+        data: { userId, userType, balance: newBalance, change: delta },
+    });
+};
+
+// GET /admin/wallet/balances — paginated list of users + captains with wallet info
+module.exports.listWalletBalances = async (req, res) => {
+    const { type = 'all', page = 1, limit = 30, search } = req.query;
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(parseInt(limit, 10) || 30, 100);
+    const skip = (pageNum - 1) * limitNum;
+
+    const searchFilter = search ? {
+        $or: [
+            { 'fullname.firstname': { $regex: search, $options: 'i' } },
+            { 'fullname.lastname':  { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+            { phone: { $regex: search, $options: 'i' } },
+        ],
+    } : {};
+
+    const [usersRaw, captainsRaw] = await Promise.all([
+        type !== 'captain' ? userModel.find(searchFilter).select('fullname email phone wallet createdAt').lean() : [],
+        type !== 'user'    ? captainModel.find(searchFilter).select('fullname email phone wallet createdAt').lean() : [],
+    ]);
+
+    const combined = [
+        ...usersRaw.map(u => ({ ...u, userType: 'user' })),
+        ...captainsRaw.map(c => ({ ...c, userType: 'captain' })),
+    ].sort((a, b) => (b.wallet?.balance || 0) - (a.wallet?.balance || 0));
+
+    const total = combined.length;
+    const data  = combined.slice(skip, skip + limitNum);
+
+    return paginated(res, { data, total, page: pageNum, limit: limitNum });
+};
+
+// ═════════════════════════════════════════════════
+// PROMO / OFFERS MANAGEMENT
+// ═════════════════════════════════════════════════
+const promoModel = require('../models/promo.model');
+
+// GET /admin/promos
+module.exports.listPromos = async (req, res) => {
+    const { active, page = 1, limit = 50 } = req.query;
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(parseInt(limit, 10) || 50, 200);
+    const filter = {};
+    if (active === 'true')  filter.isActive = true;
+    if (active === 'false') filter.isActive = false;
+
+    const [promos, total] = await Promise.all([
+        promoModel.find(filter).select('-usedBy').sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
+        promoModel.countDocuments(filter),
+    ]);
+
+    // Attach usage count per promo
+    const rideModel2 = require('../models/ride.model');
+    const usageCounts = await rideModel2.aggregate([
+        { $match: { promoCode: { $exists: true, $ne: null }, status: 'completed' } },
+        { $group: { _id: '$promoCode', count: { $sum: 1 }, totalDiscount: { $sum: '$discount' } } },
+    ]);
+    const usageMap = {};
+    usageCounts.forEach(u => { usageMap[u._id] = { count: u.count, totalDiscount: u.totalDiscount }; });
+    const enriched = promos.map(p => ({ ...p, usage: usageMap[p.code] || { count: 0, totalDiscount: 0 } }));
+
+    return paginated(res, { data: enriched, total, page: pageNum, limit: limitNum });
+};
+
+// POST /admin/promos
+module.exports.createPromo = async (req, res) => {
+    const { code, type, value, maxDiscount, minFare, maxUsage, perUserLimit, validFrom, validUntil, applicableVehicles, description } = req.body;
+    if (!code || !type || value === undefined || !validUntil) {
+        throw new AppError('code, type, value, and validUntil are required', 400);
+    }
+    const promo = await promoModel.create({
+        code: code.toUpperCase().trim(),
+        type,
+        value: Number(value),
+        maxDiscount: maxDiscount ? Number(maxDiscount) : null,
+        minFare: minFare ? Number(minFare) : 0,
+        maxUsage: maxUsage ? Number(maxUsage) : null,
+        perUserLimit: perUserLimit ? Number(perUserLimit) : 1,
+        validFrom: validFrom ? new Date(validFrom) : new Date(),
+        validUntil: new Date(validUntil),
+        applicableVehicles: applicableVehicles || ['moto', 'auto', 'car'],
+        description: description || '',
+        isActive: true,
+    });
+    logger.info('Promo created', { code: promo.code, adminId: req.admin._id });
+    return success(res, { statusCode: 201, message: 'Promo created', data: promo });
+};
+
+// PATCH /admin/promos/:id
+module.exports.updatePromo = async (req, res) => {
+    const allowed = ['value', 'maxDiscount', 'minFare', 'maxUsage', 'perUserLimit', 'validFrom', 'validUntil', 'applicableVehicles', 'description', 'isActive'];
+    const update = {};
+    allowed.forEach(k => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
+
+    const promo = await promoModel.findByIdAndUpdate(req.params.id, { $set: update }, { new: true, runValidators: true });
+    if (!promo) throw new AppError('Promo not found', 404);
+
+    logger.info('Promo updated', { promoId: promo._id, update, adminId: req.admin._id });
+    return success(res, { message: 'Promo updated', data: promo });
+};
+
+// PATCH /admin/promos/:id/toggle
+module.exports.togglePromo = async (req, res) => {
+    const promo = await promoModel.findById(req.params.id);
+    if (!promo) throw new AppError('Promo not found', 404);
+    promo.isActive = !promo.isActive;
+    await promo.save();
+    logger.info('Promo toggled', { promoId: promo._id, isActive: promo.isActive, adminId: req.admin._id });
+    return success(res, { message: `Promo ${promo.isActive ? 'activated' : 'deactivated'}`, data: { _id: promo._id, isActive: promo.isActive } });
+};
+
+// DELETE /admin/promos/:id
+module.exports.deletePromo = async (req, res) => {
+    const promo = await promoModel.findByIdAndDelete(req.params.id);
+    if (!promo) throw new AppError('Promo not found', 404);
+    logger.info('Promo deleted', { promoId: req.params.id, adminId: req.admin._id });
+    return success(res, { message: 'Promo deleted' });
+};
+

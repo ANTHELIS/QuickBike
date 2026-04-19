@@ -5,6 +5,7 @@ const captainController = require('../controllers/captain.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const asyncHandler = require('../utils/asyncHandler');
 const { authLimiter } = require('../middlewares/rateLimiter.middleware');
+const { uploadProfilePic, uploadVehicleImage } = require('../middlewares/upload.middleware');
 
 router.post(
     '/register',
@@ -70,6 +71,17 @@ router.get(
     asyncHandler(captainController.getCaptainProfile)
 );
 
+router.patch(
+    '/profile',
+    authMiddleware.authCaptain,
+    [
+        body('firstname').optional().trim().isLength({ min: 3 }).withMessage('First name too short'),
+        body('lastname').optional().trim(),
+        body('phone').optional().trim().isMobilePhone().withMessage('Invalid phone number'),
+    ],
+    asyncHandler(captainController.updateProfile)
+);
+
 router.post(
     '/logout',
     authMiddleware.authCaptain,
@@ -85,5 +97,9 @@ router.patch(
     ],
     asyncHandler(captainController.updateStatus)
 );
+
+// ── Image uploads ──
+router.post('/profile/picture', authMiddleware.authCaptain, uploadProfilePic, asyncHandler(captainController.uploadProfilePicture));
+router.post('/vehicle/image', authMiddleware.authCaptain, uploadVehicleImage, asyncHandler(captainController.uploadVehicleImage));
 
 module.exports = router;

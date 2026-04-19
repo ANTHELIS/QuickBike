@@ -30,6 +30,28 @@ const UserAccount = () => {
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
+  const [uploadingPic, setUploadingPic] = useState(false)
+
+  const handleProfilePicUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('profilePicture', file)
+    setUploadingPic(true)
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/profile/picture`,
+        formData,
+        { headers: { ...authHeader(), 'Content-Type': 'multipart/form-data' } }
+      )
+      setUser(res.data.user)
+    } catch (err) {
+      console.warn('Profile pic upload failed:', err)
+      alert('Failed to upload profile picture.')
+    } finally {
+      setUploadingPic(false)
+    }
+  }
 
   // saved places
   const [places, setPlaces] = useState([])
@@ -115,7 +137,39 @@ const UserAccount = () => {
   }
 
   if (isDesktop) {
-    return <UserAccountDesktop user={user} navigate={navigate} setEditOpen={setEditOpen} stats={stats} />;
+    return (
+      <UserAccountDesktop
+        user={user}
+        navigate={navigate}
+        stats={stats}
+        // profile edit
+        editOpen={editOpen}
+        setEditOpen={setEditOpen}
+        firstName={firstName}
+        setFirstName={setFirstName}
+        lastName={lastName}
+        setLastName={setLastName}
+        phone={phone}
+        setPhone={setPhone}
+        saving={saving}
+        saveMsg={saveMsg}
+        saveProfile={saveProfile}
+        // profile picture
+        uploadingPic={uploadingPic}
+        handleProfilePicUpload={handleProfilePicUpload}
+        // saved places
+        placesOpen={placesOpen}
+        setPlacesOpen={setPlacesOpen}
+        places={places}
+        newLabel={newLabel}
+        setNewLabel={setNewLabel}
+        newAddress={newAddress}
+        setNewAddress={setNewAddress}
+        placeLoading={placeLoading}
+        upsertPlace={upsertPlace}
+        deletePlace={deletePlace}
+      />
+    );
   }
 
   return (
@@ -135,8 +189,24 @@ const UserAccount = () => {
         {/* Profile Hero */}
         <section className="bg-white px-6 pb-8 pt-5 mb-3 shadow-sm">
           <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shadow-inner shrink-0">
-              <i className="fa-solid fa-user text-orange-500 text-3xl"></i>
+            {/* Profile avatar with upload */}
+            <div className="relative w-20 h-20 shrink-0">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shadow-inner overflow-hidden">
+                {user?.profilePicture?.url ? (
+                  <img src={user.profilePicture.url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <i className="fa-solid fa-user text-orange-500 text-3xl"></i>
+                )}
+                {uploadingPic && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-3xl">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#f5820d] hover:bg-[#c96800] rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors">
+                <i className="fa-solid fa-camera text-white text-[9px]"></i>
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleProfilePicUpload} disabled={uploadingPic} />
+              </label>
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-extrabold text-slate-900 truncate">

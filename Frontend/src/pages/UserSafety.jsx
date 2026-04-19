@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router';
+import { UserDataContext } from '../context/UserContext';
 import UserSafetyDesktop from '../components/UserSafetyDesktop';
 
 const UserSafety = () => {
   const navigate = useNavigate();
+  const { user } = useContext(UserDataContext);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   
   useEffect(() => {
@@ -13,7 +15,7 @@ const UserSafety = () => {
   }, []);
   
   if (isDesktop) {
-    return <UserSafetyDesktop navigate={navigate} />;
+    return <UserSafetyDesktop navigate={navigate} user={user} />;
   }
   
   // Basic Mobile Fallback

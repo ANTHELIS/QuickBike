@@ -42,6 +42,12 @@ const userSchema = new mongoose.Schema(
             default: null,
         },
 
+        // ── Profile Picture ──
+        profilePicture: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' },
+        },
+
         // ── Push Notifications ──
         fcmToken: {
             type: String,
@@ -68,6 +74,33 @@ const userSchema = new mongoose.Schema(
         wallet: {
             balance: { type: Number, default: 0, min: 0 },
             currency: { type: String, default: 'INR' },
+        },
+
+        // ── Saved Payment Methods ──
+        paymentMethods: {
+            type: [
+                {
+                    type: { type: String, enum: ['upi', 'card'], required: true },
+                    label: { type: String, trim: true },     // e.g. 'Personal UPI', 'HDFC Debit'
+                    value: { type: String, trim: true },     // UPI ID or masked card number
+                    isDefault: { type: Boolean, default: false },
+                    addedAt: { type: Date, default: Date.now },
+                },
+            ],
+            default: [],
+        },
+
+        // ── Trusted Contacts (Safety SOS) ──
+        trustedContacts: {
+            type: [
+                {
+                    name: { type: String, trim: true },
+                    phone: { type: String, trim: true },
+                    relationship: { type: String, trim: true, default: 'Other' },
+                    addedAt: { type: Date, default: Date.now },
+                },
+            ],
+            default: [],
         },
 
         // ── Preferences ──
