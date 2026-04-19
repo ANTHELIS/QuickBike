@@ -151,7 +151,7 @@ const UserSignup = () => {
             </div>
 
             <div className="group">
-              <label className="text-[11px] font-black text-gray-400 group-focus-within:text-[#F5820D] uppercase tracking-[0.2em] block mb-2 px-1 transition-colors">Email Address</label>
+              <label className="text-[11px] font-black text-gray-400 group-focus-within:text-[#F5820D] uppercase tracking-[0.2em] block mb-2 px-1 transition-colors">Email Address (Optional)</label>
               <div className="bg-white border-2 border-transparent outline outline-1 outline-gray-200 rounded-2xl overflow-hidden focus-within:outline-none focus-within:border-[#F5820D] focus-within:shadow-[0_8px_30px_rgba(245,130,13,0.15)] transition-all duration-300">
                 <input
                   type="email"
@@ -159,7 +159,6 @@ const UserSignup = () => {
                   placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                 />
               </div>
             </div>
@@ -180,18 +179,19 @@ const UserSignup = () => {
             </div>
 
             <div className="group">
-              <label className="text-[11px] font-black text-gray-400 group-focus-within:text-[#F5820D] uppercase tracking-[0.2em] block mb-2 px-1 transition-colors">Phone (optional)</label>
-              <div className="brand-surface border-2 border-transparent outline outline-1 outline-gray-200 rounded-2xl overflow-hidden brand-focus transition-all duration-300 relative">
-                <div className="bg-gray-50/50 px-4 py-3.5 border-r border-gray-200 flex items-center justify-center select-none">
+              <label className="text-[11px] font-black text-gray-400 group-focus-within:text-[#F5820D] uppercase tracking-[0.2em] block mb-2 px-1 transition-colors">Phone Number</label>
+              <div className="brand-surface border-2 border-transparent outline outline-1 outline-gray-200 rounded-2xl overflow-hidden brand-focus transition-all duration-300 relative group-focus-within:border-[#F5820D]">
+                <div className="bg-gray-50/50 absolute left-0 top-0 bottom-0 px-4 border-r border-gray-200 flex items-center justify-center select-none z-10">
                   <span className="text-[13px] font-black text-gray-600">+91</span>
                 </div>
                 <input
                   type="tel"
-                  className="w-full bg-transparent py-3.5 px-4 text-gray-900 font-black placeholder-gray-400 outline-none text-[16px] tracking-wider"
+                  className="w-full bg-transparent py-3.5 pl-[68px] pr-4 text-gray-900 font-black placeholder-gray-400 outline-none text-[16px] tracking-wider relative z-0"
                   placeholder="Mobile number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                   pattern="[0-9]{10}"
+                  required
                 />
               </div>
             </div>

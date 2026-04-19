@@ -63,15 +63,11 @@ module.exports.loginCaptain = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, phone, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!email && !phone) {
-        throw new AppError('Email or phone number is required', 400);
-    }
-
-    // Login by phone (preferred) or email
-    const query = phone ? { phone } : { email };
-    const captain = await captainModel.findOne(query).select('+password');
+    const captain = await captainModel.findOne({
+        $or: [{ email: identifier }, { phone: identifier }]
+    }).select('+password');
     if (!captain) {
         throw new AppError('Invalid credentials', 401);
     }

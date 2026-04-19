@@ -5,7 +5,7 @@ import { UserDataContext } from '../context/UserContext'
 import { useSiteConfig } from '../context/SiteConfigContext'
 
 const UserLogin = () => {
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -20,7 +20,7 @@ const UserLogin = () => {
     setError('')
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, { email, password })
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, { identifier, password })
       if (response.status === 200) {
         const data = response.data
         setUser(data.user)
@@ -117,14 +117,14 @@ const UserLogin = () => {
           <form onSubmit={submitHandler} className="space-y-6 animate-[fade-in_1s_ease-out]">
             
             <div className="group">
-              <label className="text-[11px] font-black text-gray-400 group-focus-within:text-[#F5820D] uppercase tracking-[0.2em] block mb-2 px-1 transition-colors">Email Address</label>
+              <label className="text-[11px] font-black text-gray-400 group-focus-within:text-[#F5820D] uppercase tracking-[0.2em] block mb-2 px-1 transition-colors">Email or Phone</label>
               <div className="brand-surface border-2 border-transparent outline outline-1 outline-gray-200 rounded-2xl overflow-hidden brand-focus transition-all duration-300">
                 <input
-                  type="email"
+                  type="text"
                   className="w-full bg-transparent py-4 md:py-5 px-5 text-gray-900 font-medium placeholder-gray-400 outline-none text-[16px]"
-                  placeholder="name@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@email.com or 10-digit number"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   required
                 />
               </div>

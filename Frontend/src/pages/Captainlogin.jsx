@@ -5,7 +5,7 @@ import { CaptainDataContext } from '../context/CapatainContext'
 import { useSiteConfig } from '../context/SiteConfigContext'
 
 const Captainlogin = () => {
-  const [phone, setPhone] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -19,7 +19,7 @@ const Captainlogin = () => {
     setError('')
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, { phone, password })
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, { identifier, password })
       if (response.status === 200) {
         setCaptain(response.data.captain)
         localStorage.setItem('captain_token', response.data.token)
@@ -120,20 +120,15 @@ const Captainlogin = () => {
           <form onSubmit={submitHandler} className="space-y-6">
             
             <div>
-              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] block mb-2 px-1">Phone Number</label>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] block mb-2 px-1">Email or Phone</label>
               <div className="flex bg-[#161616] border border-[#2a2a2a] rounded-md overflow-hidden brand-focus transition-colors relative">
-                <div className="bg-[#1a1a1a] px-4 py-4 border-r border-[#2a2a2a] flex items-center gap-2 select-none">
-                  <span className="text-sm font-medium text-gray-300">+91</span>
-                  <i className="fa-solid fa-caret-down text-[10px] text-gray-500" />
-                </div>
                 <input
-                  type="tel"
+                  type="text"
                   className="w-full bg-transparent py-4 px-4 text-gray-100 placeholder-gray-600 outline-none text-[15px] tracking-wide"
-                  placeholder="Enter your mobile number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  placeholder="name@email.com or 10-digit number"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   required
-                  pattern="[0-9]{10}"
                 />
               </div>
             </div>

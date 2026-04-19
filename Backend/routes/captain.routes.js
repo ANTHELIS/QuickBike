@@ -49,15 +49,9 @@ router.post(
     '/login',
     authLimiter,
     [
-        body('phone')
-            .optional({ nullable: true, checkFalsy: true })
-            .matches(/^[0-9]{10}$/)
-            .withMessage('Invalid phone number'),
-        body('email')
-            .optional({ nullable: true, checkFalsy: true })
-            .isEmail()
-            .normalizeEmail()
-            .withMessage('Invalid Email'),
+        body('identifier')
+            .notEmpty()
+            .withMessage('Email or phone is required'),
         body('password')
             .isLength({ min: 6 })
             .withMessage('Password must be at least 6 characters long'),

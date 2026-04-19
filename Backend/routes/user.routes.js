@@ -11,7 +11,8 @@ router.post(
     '/register',
     authLimiter,
     [
-        body('email').isEmail().normalizeEmail().withMessage('Invalid Email'),
+        body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail().withMessage('Invalid Email'),
+        body('phone').isMobilePhone('en-IN').withMessage('Invalid phone number'),
         body('fullname.firstname')
             .trim()
             .isLength({ min: 3 })
@@ -27,7 +28,7 @@ router.post(
     '/login',
     authLimiter,
     [
-        body('email').isEmail().normalizeEmail().withMessage('Invalid Email'),
+        body('identifier').notEmpty().withMessage('Email or Phone is required'),
         body('password')
             .isLength({ min: 6 })
             .withMessage('Password must be at least 6 characters long'),

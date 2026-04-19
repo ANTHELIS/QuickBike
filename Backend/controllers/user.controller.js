@@ -10,11 +10,18 @@ module.exports.registerUser = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password, phone } = req.body;
 
-    const existingUser = await userModel.findOne({ email });
-    if (existingUser) {
-        throw new AppError('User with this email already exists', 409);
+    const existingPhone = await userModel.findOne({ phone });
+    if (existingPhone) {
+        throw new AppError('User with this phone number already exists', 409);
+    }
+
+    if (email) {
+        const existingEmail = await userModel.findOne({ email });
+        if (existingEmail) {
+            throw new AppError('User with this email already exists', 409);
+        }
     }
 
     const hashedPassword = await userModel.hashPassword(password);
@@ -23,6 +30,7 @@ module.exports.registerUser = async (req, res) => {
         firstname: fullname.firstname,
         lastname: fullname.lastname,
         email,
+        phone,
         password: hashedPassword,
     });
 
@@ -44,11 +52,13 @@ module.exports.loginUser = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    const user = await userModel.findOne({ email }).select('+password +loginAttempts +lockUntil');
+    const user = await userModel.findOne({
+        $or: [{ email: identifier }, { phone: identifier }]
+    }).select('+password +loginAttempts +lockUntil');
     if (!user) {
-        throw new AppError('Invalid email or password', 401);
+        throw new AppError('Invalid email/phone or password', 401);
     }
 
     if (user.isLocked()) {
