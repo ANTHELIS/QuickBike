@@ -2,6 +2,7 @@ const express    = require('express');
 const router     = express.Router();
 const { authAdmin, requireRole } = require('../middlewares/auth.admin.middleware');
 const adminCtrl  = require('../controllers/admin.controller');
+const siteConfigCtrl = require('../controllers/siteConfig.controller');
 const asyncHandler = require('../utils/asyncHandler');
 
 // ═════════════════════════════════════════════════
@@ -53,5 +54,14 @@ router.post('/promos',             requireRole('super_admin', 'admin'), asyncHan
 router.patch('/promos/:id',        requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.updatePromo));
 router.patch('/promos/:id/toggle', requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.togglePromo));
 router.delete('/promos/:id',       requireRole('super_admin', 'admin'), asyncHandler(adminCtrl.deletePromo));
+
+// ── Site Config (Banners & Colors) ──
+router.get('/site-config',                   asyncHandler(siteConfigCtrl.getSiteConfig));
+router.patch('/site-config/banners',         requireRole('super_admin', 'admin'), asyncHandler(siteConfigCtrl.updateBanners));
+router.patch('/site-config/colors',          requireRole('super_admin', 'admin'), asyncHandler(siteConfigCtrl.updateColors));
+
+// ── Broadcast Notifications ──
+router.post('/notifications/broadcast',      requireRole('super_admin', 'admin'), asyncHandler(siteConfigCtrl.broadcastNotification));
+router.get('/notifications/history',         asyncHandler(siteConfigCtrl.getNotificationHistory));
 
 module.exports = router;

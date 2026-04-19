@@ -18,13 +18,15 @@ export const AdminLayout = ({ children }) => {
   };
 
   const nav = [
-    { icon: "fa-gauge", label: "Dashboard", to: "/admin" },
-    { icon: "fa-clipboard-check", label: "KYC Review", to: "/admin/kyc" },
-    { icon: "fa-motorcycle", label: "Captains", to: "/admin/captains" },
-    { icon: "fa-users", label: "Users", to: "/admin/users" },
-    { icon: "fa-coins", label: "Wallets", to: "/admin/wallet" },
-    { icon: "fa-tag", label: "Offers & Promos", to: "/admin/promos" },
-    { icon: "fa-headset", label: "Support Inbox", to: "/admin/support" },
+    { icon: 'fa-gauge',           label: 'Dashboard',        to: '/admin' },
+    { icon: 'fa-clipboard-check', label: 'KYC Review',        to: '/admin/kyc' },
+    { icon: 'fa-motorcycle',      label: 'Captains',          to: '/admin/captains' },
+    { icon: 'fa-users',           label: 'Users',             to: '/admin/users' },
+    { icon: 'fa-coins',           label: 'Wallets',           to: '/admin/wallet' },
+    { icon: 'fa-tag',             label: 'Offers & Promos',   to: '/admin/promos' },
+    { icon: 'fa-headset',         label: 'Support Inbox',     to: '/admin/support' },
+    { icon: 'fa-image',           label: 'Site Config',       to: '/admin/site-config' },
+    { icon: 'fa-bell',            label: 'Notifications',     to: '/admin/notifications' },
   ];
 
   const SidebarContent = () => (
@@ -285,10 +287,22 @@ const AdminDashboard = () => {
             <i className="fa-solid fa-coins" /> Manage Wallets
           </button>
           <button
-            onClick={() => navigate("/admin/promos")}
+            onClick={() => navigate('/admin/promos')}
             className="flex items-center gap-2 bg-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors"
           >
             <i className="fa-solid fa-tag" /> Manage Promos
+          </button>
+          <button
+            onClick={() => navigate('/admin/site-config')}
+            className="flex items-center gap-2 bg-slate-800 text-slate-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-700 transition-colors"
+          >
+            <i className="fa-solid fa-image" /> Edit Site Banners
+          </button>
+          <button
+            onClick={() => navigate('/admin/notifications')}
+            className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-500/20 transition-colors"
+          >
+            <i className="fa-solid fa-bell" /> Send Notification
           </button>
         </div>
       </div>
@@ -297,3 +311,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

@@ -102,4 +102,8 @@ router.patch(
 router.post('/profile/picture', authMiddleware.authCaptain, uploadProfilePic, asyncHandler(captainController.uploadProfilePicture));
 router.post('/vehicle/image', authMiddleware.authCaptain, uploadVehicleImage, asyncHandler(captainController.uploadVehicleImage));
 
+// ── Notifications ──
+router.get('/notifications', authMiddleware.authCaptain, asyncHandler(captainController.getNotifications));
+router.patch('/notifications/read-all', authMiddleware.authCaptain, asyncHandler(captainController.markAllNotificationsRead));
+
 module.exports = router;

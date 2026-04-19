@@ -7,6 +7,8 @@ import LiveTracking from '../components/LiveTracking'
 import RidePopUp from '../components/RidePopUp'
 import ConfirmRidePopUp from '../components/ConfirmRidePopUp'
 import CaptainDesktopSidebar from '../components/CaptainDesktopSidebar'
+import NotificationDropdown from '../components/NotificationDropdown'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('captain_token')}` })
 
@@ -26,6 +28,7 @@ const CaptainHome = () => {
   const { socket } = useContext(SocketContext)
   const { captain } = useContext(CaptainDataContext)
   const navigate = useNavigate()
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY
@@ -243,7 +246,7 @@ const CaptainHome = () => {
               <i className="fa-solid fa-user text-slate-800 dark:text-gray-200 text-sm" />
             </button>
             <div className="h-10 bg-white/90 dark:bg-[#1a1c1e]/90 backdrop-blur-md rounded-full flex items-center shadow-md px-3 border border-orange-100 dark:border-[#333] cursor-pointer">
-              <i className="fa-solid fa-wallet text-orange-500 mr-2" />
+              <i className="fa-solid fa-wallet brand-text mr-2" />
               <span className="font-bold text-sm text-slate-700 dark:text-gray-200">₹{captain?.wallet?.balance || 0}</span>
             </div>
           </div>
@@ -259,7 +262,7 @@ const CaptainHome = () => {
                   ? 'bg-white/80 dark:bg-[#1a1c1e]/90 border border-gray-200 dark:border-[#333] cursor-not-allowed text-gray-500'
                   : isOnline
                   ? 'bg-green-600 hover:bg-green-700 active:scale-95 text-white shadow-green-600/30'
-                  : 'bg-[#E57E01] hover:bg-orange-600 active:scale-95 text-white shadow-orange-500/30'
+                  : 'brand-btn active:scale-95 text-white'
               }`}
             >
               {!kycApproved ? (
@@ -277,7 +280,7 @@ const CaptainHome = () => {
             
             {/* Desktop only Notification & user icons */}
             <div className="hidden md:flex items-center gap-3">
-              <button className="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-colors"><i className="fa-solid fa-bell text-lg" /></button>
+              <NotificationDropdown userType="captain" />
               <button onClick={() => navigate('/captain/account')} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-colors"><i className="fa-solid fa-user-circle text-2xl" /></button>
             </div>
 
@@ -405,7 +408,7 @@ const CaptainHome = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
+                    <div className="text-xs font-bold brand-text brand-surface px-2 py-1 rounded-lg">
                       {captain?.ratings?.average ? `${captain.ratings.average.toFixed(1)} ★` : '— ★'}
                     </div>
                   </div>
@@ -443,12 +446,32 @@ const CaptainHome = () => {
       {/* ── Right Sidebar (Desktop Only) ── */}
       {/* ── Right Sidebar (Desktop Only) ── */}
       <aside className="hidden lg:flex w-[400px] bg-white dark:bg-[#121214] border-l border-slate-100 dark:border-[#2b2d31] flex-col h-full z-10 overflow-y-auto shrink-0 transition-colors">
-        <div className="p-8 pb-4">
-          <p className="text-[10px] font-black text-orange-500 tracking-widest uppercase mb-2">The Daily Forecast</p>
+        <div className="bg-white dark:bg-[#161719] rounded-[32px] p-8 shadow-sm border border-transparent dark:border-[#2b2d31] transition-colors relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-50 dark:bg-orange-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none transition-colors" />
+          <p className="text-[10px] font-black brand-text tracking-widest uppercase mb-2">The Daily Forecast</p>
           <h2 className="text-3xl font-extrabold font-['Manrope'] text-slate-900 dark:text-gray-100 leading-tight transition-colors">Today's Earnings</h2>
           <div className="flex items-baseline gap-3 mt-1">
              <span className="text-5xl font-black text-slate-900 dark:text-gray-100 tracking-tight transition-colors">₹{stats.todayEarnings || 0}</span>
-             <span className="text-sm font-bold text-blue-600 dark:text-blue-400 transition-colors">+12% vs yest.</span>
+             {(() => {
+                const today = stats.todayEarnings || 0;
+                const yesterday = stats.yesterdayEarnings || 0;
+                
+                if (today === 0 && yesterday === 0) return null;
+                
+                let pct = 0;
+                if (yesterday > 0) {
+                    pct = Math.round(((today - yesterday) / yesterday) * 100);
+                } else if (today > 0) {
+                    pct = 100;
+                }
+                
+                const isPositive = pct >= 0;
+                return (
+                    <span className={`text-sm font-bold transition-colors ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                        {isPositive ? '+' : ''}{pct}% vs yest.
+                    </span>
+                )
+             })()}
           </div>
         </div>
         <div className="px-8 py-4 flex gap-6 border-b border-slate-50 dark:border-[#2b2d31] transition-colors">
@@ -467,7 +490,7 @@ const CaptainHome = () => {
             <h3 className="text-lg font-bold font-['Manrope'] text-slate-800 dark:text-gray-100">Recent Activity</h3>
             <button 
               onClick={() => navigate('/captain/history')}
-              className="text-xs font-bold text-orange-600 hover:underline active:scale-95 transition-transform"
+              className="text-xs font-bold brand-text hover:underline active:scale-95 transition-transform"
             >
               View All
             </button>

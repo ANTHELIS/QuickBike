@@ -156,6 +156,18 @@ app.use('/payments',  paymentRoutes);
 app.use('/promos',    apiLimiter, promoRoutes);
 app.use('/support',   apiLimiter, supportRoutes);
 
+// ── Public site-config endpoint (no auth — used by frontend to load banners/colors) ──
+const SiteConfig = require('./models/siteConfig.model');
+app.get('/api/site-config', async (req, res) => {
+    try {
+        let config = await SiteConfig.findOne({ slug: 'default' });
+        if (!config) config = await SiteConfig.create({ slug: 'default' });
+        res.json({ success: true, data: config });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to load site config' });
+    }
+});
+
 // Versioned routes (new endpoints go here)
 app.use('/api/v1/users',     userRoutes);
 app.use('/api/v1/captains',  captainRoutes);

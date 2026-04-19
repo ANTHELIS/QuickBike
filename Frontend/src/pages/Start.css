@@ -12,7 +12,7 @@
   left: 0;
   right: 0;
   height: 45%;
-  background: linear-gradient(135deg, #904d00 0%, #E67E00 60%, #ffb77d 100%);
+  background: linear-gradient(135deg, var(--color-primary, #904d00) 0%, var(--color-secondary, #E67E00) 60%, #ffb77d 100%);
   clip-path: ellipse(120% 100% at 50% 0%);
   z-index: 0;
 }
@@ -63,7 +63,7 @@
   line-height: 1.05;
 }
 .text-gradient {
-  background: linear-gradient(135deg, #ffdcc3, #ffb77d);
+  background: linear-gradient(135deg, var(--color-secondary, #ffdcc3), #ffb77d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -117,6 +117,6 @@
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(230, 126, 0, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-primary, #E67E00) 8%, transparent) 0%, transparent 70%);
   z-index: 0;
 }

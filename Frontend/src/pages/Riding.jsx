@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router'
 import LiveTracking from '../components/LiveTracking'
 import RatingScreen from '../components/RatingScreen'
 import { SocketContext } from '../context/SocketContext'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 const Riding = () => {
   const location = useLocation()
@@ -10,6 +11,7 @@ const Riding = () => {
   const ride = location.state?.ride
   const { socket } = useContext(SocketContext)
   const [showRating, setShowRating] = useState(false)
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   // Listen for captain ending the ride → show rating screen
   // Also handle ride-cancelled during an active ride
@@ -65,7 +67,7 @@ const Riding = () => {
               <h2 className="text-xl font-bold text-gray-800">Heading to destination</h2>
               <p className="text-sm text-gray-500">Enjoy your ride safely</p>
             </div>
-            <div className="w-10 h-10 bg-orange-100 rounded-full flex justify-center items-center text-orange-500">
+            <div className="brand-surface brand-text w-10 h-10 rounded-full flex justify-center items-center">
               <i className="fa-solid fa-location-arrow" />
             </div>
           </div>
@@ -84,7 +86,7 @@ const Riding = () => {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Fare</p>
-                <div className="text-2xl font-black text-[#A85507]">₹{ride?.fare || '0'}</div>
+                <div className="text-2xl font-black brand-text">₹{ride?.fare || '0'}</div>
               </div>
             </div>
 
@@ -161,7 +163,7 @@ const Riding = () => {
 
             {/* Manual home fallback button (ride-ended socket event is the primary trigger) */}
             <button
-              className="w-full bg-gradient-to-r from-[#b35f00] to-[#eb8300] py-4 rounded-2xl flex items-center justify-center gap-3 text-white font-bold text-lg shadow-[0_4px_14px_0_rgba(235,131,0,0.39)] active:scale-[0.98] transition-all"
+              className="w-full brand-btn py-4 rounded-2xl flex items-center justify-center gap-3 text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all"
               onClick={() => navigate('/home')}
             >
               I've Paid — Back to Home

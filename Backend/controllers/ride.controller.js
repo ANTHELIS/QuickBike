@@ -300,9 +300,20 @@ module.exports.getUserStats = async (req, res) => {
     todayStart.setHours(0, 0, 0, 0);
     const todayFilter = { ...filter, createdAt: { $gte: todayStart } };
 
+    const yesterdayStart = new Date(todayStart);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    
+    const yesterdayFilter = {
+        ...filter,
+        createdAt: {
+            $gte: yesterdayStart,
+            $lt: todayStart
+        }
+    };
+
     const ratingField = userType === 'captain' ? '$captainRating' : '$userRating';
 
-    const [totalRides, completedRides, totalSpentAgg, cancelledRides, todayRides, todayEarningsAgg, ratingAgg] =
+    const [totalRides, completedRides, totalSpentAgg, cancelledRides, todayRides, todayEarningsAgg, yesterdayEarningsAgg, ratingAgg] =
         await Promise.all([
             rideModel.countDocuments(filter),
             rideModel.countDocuments({ ...filter, status: 'completed' }),
@@ -314,6 +325,10 @@ module.exports.getUserStats = async (req, res) => {
             rideModel.countDocuments({ ...todayFilter, status: 'completed' }),
             rideModel.aggregate([
                 { $match: { ...todayFilter, status: 'completed' } },
+                { $group: { _id: null, total: { $sum: '$fare' } } },
+            ]),
+            rideModel.aggregate([
+                { $match: { ...yesterdayFilter, status: 'completed' } },
                 { $group: { _id: null, total: { $sum: '$fare' } } },
             ]),
             rideModel.aggregate([
@@ -330,6 +345,7 @@ module.exports.getUserStats = async (req, res) => {
             totalSpent: totalSpentAgg[0]?.total || 0,
             todayRides,
             todayEarnings: todayEarningsAgg[0]?.total || 0,
+            yesterdayEarnings: yesterdayEarningsAgg[0]?.total || 0,
             rating: ratingAgg[0]?.avg ? parseFloat(ratingAgg[0].avg.toFixed(1)) : null,
         },
     });

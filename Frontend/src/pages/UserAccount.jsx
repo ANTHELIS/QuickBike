@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import axios from 'axios'
 import { UserDataContext } from '../context/UserContext'
 import UserAccountDesktop from '../components/UserAccountDesktop'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 /* ── tiny helpers ── */
 const ICON_MAP = { Home: 'fa-house', Work: 'fa-briefcase', Gym: 'fa-dumbbell', Other: 'fa-location-dot' }
@@ -12,6 +13,7 @@ const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('user_
 const UserAccount = () => {
   const navigate = useNavigate()
   const { user, setUser } = useContext(UserDataContext)
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
   useEffect(() => {
@@ -173,29 +175,29 @@ const UserAccount = () => {
   }
 
   return (
-    <div className="bg-slate-100 min-h-screen flex justify-center font-['Inter']">
-      <main className="w-full max-w-[390px] min-h-[100dvh] bg-slate-50 shadow-xl flex flex-col relative">
+    <div className="brand-page-bg min-h-screen flex justify-center font-['Inter']">
+      <main className="w-full max-w-[390px] min-h-[100dvh] brand-page-bg shadow-xl flex flex-col relative">
 
         {/* Header */}
-        <header className="flex items-center gap-4 px-6 pt-12 pb-4 bg-white sticky top-0 z-10 shadow-sm">
-          <button onClick={() => navigate('/home')} className="p-2 rounded-full hover:bg-orange-50 -ml-2 transition-colors">
-            <svg className="h-6 w-6 text-slate-800" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <header className="flex items-center gap-4 px-6 pt-12 pb-4 brand-surface sticky top-0 z-10 shadow-sm">
+          <button onClick={() => navigate('/home')} className="p-2 rounded-full hover:opacity-70 -ml-2 transition-colors">
+            <svg className="h-6 w-6 brand-text-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          <h1 className="text-xl font-black font-['Manrope'] text-slate-900">Account</h1>
+          <h1 className="text-xl font-black font-['Manrope'] brand-text-primary">Account</h1>
         </header>
 
         {/* Profile Hero */}
-        <section className="bg-white px-6 pb-8 pt-5 mb-3 shadow-sm">
+        <section className="brand-surface px-6 pb-8 pt-5 mb-3 shadow-sm">
           <div className="flex items-center gap-5">
             {/* Profile avatar with upload */}
             <div className="relative w-20 h-20 shrink-0">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center shadow-inner overflow-hidden">
+              <div className="w-20 h-20 rounded-3xl brand-surface flex items-center justify-center shadow-inner overflow-hidden">
                 {user?.profilePicture?.url ? (
                   <img src={user.profilePicture.url} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <i className="fa-solid fa-user text-orange-500 text-3xl"></i>
+                  <i className="fa-solid fa-user brand-text text-3xl"></i>
                 )}
                 {uploadingPic && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-3xl">

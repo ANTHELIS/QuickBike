@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router';
 import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
 import UserPaymentDesktop from '../components/UserPaymentDesktop';
+import { useSiteConfig } from '../context/SiteConfigContext';
 
 const UserPayment = () => {
   const navigate = useNavigate();
   const { user } = useContext(UserDataContext);
+  const { getBanner } = useSiteConfig(); // triggers CSS injection
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
   useEffect(() => {
@@ -146,32 +148,32 @@ const UserPayment = () => {
 
   // ── Mobile View ──
   return (
-    <div className="bg-slate-100 min-h-screen flex justify-center font-['Inter']">
-      <main className="w-full max-w-[390px] min-h-[100dvh] bg-white shadow-xl flex flex-col">
-        <header className="flex items-center gap-4 px-6 pt-12 pb-4 bg-white sticky top-0 z-10 shadow-sm">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-orange-50 -ml-2"><i className="fa-solid fa-arrow-left text-slate-700"></i></button>
-          <h1 className="text-xl font-black font-['Manrope'] text-slate-900">Payment & Wallet</h1>
+    <div className="brand-page-bg min-h-screen flex justify-center font-['Inter']">
+      <main className="w-full max-w-[390px] min-h-[100dvh] brand-surface shadow-xl flex flex-col">
+        <header className="flex items-center gap-4 px-6 pt-12 pb-4 brand-surface sticky top-0 z-10 shadow-sm">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:opacity-70 -ml-2"><i className="fa-solid fa-arrow-left brand-text-primary"></i></button>
+          <h1 className="text-xl font-black font-['Manrope'] brand-text-primary">Payment &amp; Wallet</h1>
         </header>
         <div className="p-6 space-y-4">
           {/* Wallet Card */}
-          <div className="bg-gradient-to-br from-[#e07f22] to-[#c76500] rounded-2xl p-6 text-white">
+          <div className="brand-btn rounded-2xl p-6 text-white">
             <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">QuickBike Wallet</p>
             <p className="text-4xl font-black">₹{walletLoading ? '...' : (wallet?.balance?.toFixed(2) || '0.00')}</p>
             <button onClick={() => setTopUpOpen(true)} className="mt-4 bg-white/20 hover:bg-white/30 text-white font-bold text-sm px-5 py-2 rounded-full transition">Top Up</button>
           </div>
           {/* UPI Methods */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <div className="brand-surface rounded-2xl p-5 shadow-sm">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-black text-slate-800">UPI Methods</h2>
-              <button onClick={() => setUpiOpen(true)} className="text-[#e07f22] text-sm font-bold">+ Add</button>
+              <h2 className="font-black brand-text-primary">UPI Methods</h2>
+              <button onClick={() => setUpiOpen(true)} className="brand-text text-sm font-bold">+ Add</button>
             </div>
             {paymentMethods.filter(m => m.type === 'upi').length === 0
-              ? <p className="text-slate-400 text-sm">No UPI IDs saved.</p>
+              ? <p className="brand-text-muted text-sm">No UPI IDs saved.</p>
               : paymentMethods.filter(m => m.type === 'upi').map(m => (
-                <div key={m._id} className="flex items-center justify-between py-2 border-t border-slate-100">
+                <div key={m._id} className="flex items-center justify-between py-2 border-t border-gray-100">
                   <div>
-                    <p className="font-bold text-slate-800 text-sm">{m.value}</p>
-                    {m.isDefault && <span className="text-[10px] font-bold text-[#e07f22] uppercase">Default</span>}
+                    <p className="font-bold brand-text-primary text-sm">{m.value}</p>
+                    {m.isDefault && <span className="text-[10px] font-bold brand-text uppercase">Default</span>}
                   </div>
                   <button onClick={() => handleDeleteMethod(m._id)} className="text-red-400 text-xs"><i className="fa-solid fa-trash"></i></button>
                 </div>

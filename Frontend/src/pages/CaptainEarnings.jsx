@@ -1,9 +1,10 @@
-﻿import React, { useContext, useEffect, useState, useCallback } from 'react'
+import React, { useContext, useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { CaptainDataContext } from '../context/CapatainContext'
 import CaptainDesktopSidebar from '../components/CaptainDesktopSidebar'
 import { useTranslation } from 'react-i18next'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('captain_token')}` })
 
@@ -13,6 +14,7 @@ const CaptainEarnings = () => {
   const { captain } = useContext(CaptainDataContext)
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   const [stats, setStats] = useState(null)
   const [allRides, setAllRides] = useState([])
@@ -79,7 +81,7 @@ const CaptainEarnings = () => {
     let dateStr = new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     let timeStr = new Date(r.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     let distStr = r.distance ? `${r.distance} km` : ''
-    return distStr ? `${dateStr} â€¢ ${timeStr} â€¢ ${distStr}` : `${dateStr} â€¢ ${timeStr}`
+    return distStr ? `${dateStr} • ${timeStr} • ${distStr}` : `${dateStr} • ${timeStr}`
   }
 
   return (
@@ -92,7 +94,7 @@ const CaptainEarnings = () => {
           <div className="w-full max-w-6xl mx-auto flex flex-col hide-scrollbar relative">
             
             <header className="mb-8 pt-8 md:pt-0 px-6 md:px-0 relative">
-              <h3 className="text-xs font-bold text-[#e67e00] uppercase tracking-widest mb-1 z-10 relative">Performance Analytics</h3>
+              <h3 className="text-xs font-bold brand-text uppercase tracking-widest mb-1 z-10 relative">Performance Analytics</h3>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1a1c1e] dark:text-gray-100 font-['Manrope'] tracking-tight z-10 relative transition-colors">Earnings &amp; Growth</h1>
               <button className="absolute right-0 top-0 bg-[#e2e2e5] dark:bg-[#2b2d31] hover:bg-[#dadadc] dark:hover:bg-[#3f4147] text-[#1a1c1e] dark:text-gray-100 text-sm font-bold px-6 py-2.5 rounded-xl transition-all hidden sm:block z-10">
                 Download Report
@@ -104,7 +106,7 @@ const CaptainEarnings = () => {
                 <div className="absolute right-0 top-0 w-64 h-64 bg-orange-50 dark:bg-orange-500/5 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-orange-100 dark:group-hover:bg-orange-500/10 transition-colors pointer-events-none" />
                 <p className="text-sm font-bold text-gray-500 mb-2 relative z-10">Lifetime Earnings</p>
                 <p className="text-5xl md:text-[64px] font-black text-[#904d00] dark:text-[#f8b671] tracking-tight relative z-10 leading-none transition-colors">
-                  â‚¹{stats?.totalSpent?.toLocaleString() || 0}
+                  ₹{stats?.totalSpent?.toLocaleString() || 0}
                 </p>
               </div>
               <div className="bg-white dark:bg-[#161719] rounded-[32px] p-8 shadow-sm border border-transparent dark:border-[#2b2d31] flex flex-col justify-center md:col-span-3 lg:col-span-3 relative group transition-colors">
@@ -116,7 +118,7 @@ const CaptainEarnings = () => {
                 </div>
                 <p className="text-4xl md:text-5xl font-black text-[#1a1c1e] dark:text-gray-100 mt-2 mb-1 transition-colors">{stats?.completedRides?.toLocaleString() || 0}</p>
               </div>
-              <div className="bg-gradient-to-br from-[#e67e00] to-[#c66a00] rounded-[32px] p-8 shadow-lg shadow-orange-600/20 flex flex-col justify-center md:col-span-3 lg:col-span-3 relative overflow-hidden hover:shadow-orange-600/30 transition-shadow">
+              <div className="brand-btn rounded-[32px] p-8 shadow-lg flex flex-col justify-center md:col-span-3 lg:col-span-3 relative overflow-hidden hover:shadow-orange-600/30 transition-shadow">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
                 <div className="flex items-center justify-between mb-2 relative z-10">
                   <p className="text-sm font-bold text-[#4e2700]">Acceptance Rate</p>
@@ -152,8 +154,13 @@ const CaptainEarnings = () => {
                         {weekBars.map(({ label, earned, isToday }) => {
                           const pct = Math.max((earned / maxEarned) * 90, earned > 0 ? 12 : 5)
                           return (
-                            <div key={label} className="flex flex-col items-center flex-1 relative z-10 group cursor-pointer" style={{ height: `${pct}%` }} title={`â‚¹${earned.toFixed(0)}`}>
-                              {isToday ? <div className="w-full h-full bg-[#e67e00] shadow-xl shadow-orange-200/50 dark:shadow-orange-900/50 rounded-t-xl" /> : <><div className="w-full bg-[#f0f0f3] dark:bg-[#1f2125] rounded-t-xl transition-colors" style={{ height: `${100 - Math.min((earned / maxEarned) * 100, 80)}%` }} /><div className="w-full bg-[#dcc2af] dark:bg-[#522e0e] rounded-t-xl transition-colors" style={{ height: `${Math.min((earned / maxEarned) * 100, 80)}%` }} /></>}
+                            <div key={label} className="flex flex-col items-center flex-1 h-full justify-end relative z-10 group cursor-pointer" title={`₹${earned.toFixed(0)}`}>
+                              <div className="w-full flex-1 flex flex-col justify-end relative z-10">
+                                <div 
+                                  className={`w-full rounded-t-xl transition-all ${isToday ? 'bg-[#e67e00] shadow-xl shadow-orange-200/50 dark:shadow-orange-900/50' : (earned > 0 ? 'bg-[#dcc2af] dark:bg-[#522e0e]' : 'bg-[#f0f0f3] dark:bg-[#1f2125]')}`}
+                                  style={{ height: `${pct}%` }} 
+                                />
+                              </div>
                               <p className={`text-[10px] sm:text-xs font-bold mt-3 uppercase transition-colors ${isToday ? 'text-[#904d00] dark:text-[#f8b671]' : 'text-gray-500'}`}>{label}</p>
                             </div>
                           )
@@ -167,12 +174,12 @@ const CaptainEarnings = () => {
                     <h2 className="text-xl font-bold text-[#1a1c1e] dark:text-gray-100 font-['Manrope'] mb-3 transition-colors">Earnings Ledger</h2>
                     <div className="flex bg-[#f3f3f6] dark:bg-[#161719] border border-transparent dark:border-[#2b2d31] rounded-[10px] p-1 mb-3 transition-colors">
                        {PERIOD_TABS.map((tab) => (
-                          <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-1.5 rounded-[8px] text-[10px] font-bold transition-all ${activeTab === tab ? 'bg-[#e67e00] text-white shadow-md' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-[#2b2d31]'}`}>{tab}</button>
+                          <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-1.5 rounded-[8px] text-[10px] font-bold transition-all ${activeTab === tab ? 'brand-btn text-white shadow-md' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-[#2b2d31]'}`}>{tab}</button>
                        ))}
                     </div>
                     <div className="bg-white dark:bg-[#161719] rounded-[20px] p-5 shadow-sm border border-transparent dark:border-[#2b2d31] flex-1 flex flex-col justify-center relative transition-colors">
                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Period Total</p>
-                       <p className="text-3xl font-black text-[#1a1c1e] dark:text-gray-100 tracking-tight transition-colors">â‚¹{periodEarnings?.toLocaleString() || 0}</p>
+                       <p className="text-3xl font-black text-[#1a1c1e] dark:text-gray-100 tracking-tight transition-colors">₹{periodEarnings?.toLocaleString() || 0}</p>
                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-50 dark:border-[#2b2d31] transition-colors">
                           <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 transition-colors">Rides Completed</p>
                           <p className="text-sm font-black text-[#1a1c1e] dark:text-gray-100 transition-colors">{periodRides}</p>
@@ -207,7 +214,7 @@ const CaptainEarnings = () => {
                         </div>
                       </div>
                       <div className="text-left pt-3 sm:pt-0 sm:text-right flex sm:block justify-between items-end border-t border-gray-200 dark:border-[#2b2d31] mt-3 sm:border-0 sm:mt-0 transition-colors">
-                        <p className={`text-lg font-black transition-colors ${isCancel ? 'text-gray-400 dark:text-gray-600 line-through' : 'text-[#1a1c1e] dark:text-gray-100'}`}>â‚¹{r.fare?.toFixed(2)}</p>
+                        <p className={`text-lg font-black transition-colors ${isCancel ? 'text-gray-400 dark:text-gray-600 line-through' : 'text-[#1a1c1e] dark:text-gray-100'}`}>₹{r.fare?.toFixed(2)}</p>
                         {r.status !== 'completed' && (
                           <p className="text-[10px] md:text-xs font-bold text-red-500 mt-0.5 sm:mt-1 capitalize">{r.status}</p>
                         )}
@@ -232,7 +239,7 @@ const CaptainEarnings = () => {
             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Overview</p>
             <h1 className="text-lg font-bold text-[#1a1c1e] dark:text-gray-100 font-['Manrope'] tracking-tight transition-colors">Earnings</h1>
           </div>
-          <div className="w-9 h-9 bg-[#e67e00] rounded-xl flex items-center justify-center shadow-sm shadow-orange-300/50">
+          <div className="brand-btn w-9 h-9 rounded-xl flex items-center justify-center shadow-sm">
             <i className="fa-solid fa-wallet text-white text-sm" />
           </div>
         </header>
@@ -243,14 +250,14 @@ const CaptainEarnings = () => {
             <div className="absolute top-0 right-0 w-28 h-28 bg-orange-50 dark:bg-orange-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none transition-colors" />
             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1 relative z-10">Total Revenue</p>
             <h2 className="text-4xl font-black text-[#904d00] tracking-tight relative z-10 leading-none mb-3">
-              â‚¹{stats?.totalSpent?.toLocaleString() || 0}
+              ₹{stats?.totalSpent?.toLocaleString() || 0}
             </h2>
             <div className="flex items-center justify-between relative z-10">
               <div className="bg-[#f5f5f7] dark:bg-[#1e1e1e] rounded-[14px] px-4 py-2.5 flex-1 mr-3 transition-colors">
                 <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Total Trips</p>
                 <p className="text-xl font-black text-[#1a1c1e] dark:text-gray-100 transition-colors">{stats?.completedRides?.toLocaleString() || 0}</p>
               </div>
-              <div className="w-12 h-12 bg-[#e67e00] rounded-full flex items-center justify-center shadow-md shadow-orange-400/30 shrink-0">
+              <div className="brand-btn w-12 h-12 rounded-full flex items-center justify-center shadow-md shrink-0">
                 <i className="fa-solid fa-arrow-trend-up text-white text-base" />
               </div>
             </div>
@@ -264,7 +271,7 @@ const CaptainEarnings = () => {
               <h3 className="text-base font-bold text-[#1a1c1e] dark:text-gray-100 font-['Manrope'] transition-colors">Velocity</h3>
               <div className="flex bg-[#f5f5f7] dark:bg-[#0a0a0c] rounded-lg p-0.5 transition-colors">
                 {['Day','Week','Month'].map(t => (
-                  <button key={t} onClick={() => setMobileTab(t)} className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${t === mobileTab ? 'bg-white dark:bg-[#1c1d21] text-[#904d00] dark:text-orange-400 shadow-sm' : 'text-gray-400 dark:text-gray-500'}`}>{t}</button>
+                  <button key={t} onClick={() => setMobileTab(t)} className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${t === mobileTab ? 'bg-white dark:bg-[#1c1d21] brand-text shadow-sm' : 'text-gray-400 dark:text-gray-500'}`}>{t}</button>
                 ))}
               </div>
             </div>
@@ -293,7 +300,7 @@ const CaptainEarnings = () => {
                       <div className="w-1.5 h-1.5 bg-[#e67e00] rounded-full" />
                       <div>
                         <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest leading-none">Peak Earnings</p>
-                        <p className="text-[11px] font-black text-[#1a1c1e] leading-none mt-0.5">â‚¹{peakDay.earned.toFixed(0)} <span className="text-gray-400 font-medium">{peakDay.label}</span></p>
+                        <p className="text-[11px] font-black text-[#1a1c1e] leading-none mt-0.5">₹{peakDay.earned.toFixed(0)} <span className="text-gray-400 font-medium">{peakDay.label}</span></p>
                       </div>
                     </div>
                   )}
@@ -301,8 +308,10 @@ const CaptainEarnings = () => {
                     {weekBars.map(({ label, earned, isToday }) => {
                       const pct = Math.max((earned / maxEarned) * 100, earned > 0 ? 15 : 6)
                       return (
-                        <div key={label} className="flex flex-col items-center flex-1">
-                          <div className="w-full rounded-t-lg transition-all" style={{ height: `${pct}%`, background: isToday ? '#e67e00' : earned > 0 ? '#fddcb5' : '#f0f0f3' }} />
+                        <div key={label} className="flex flex-col items-center flex-1 h-full justify-end">
+                          <div className="w-full flex-1 flex flex-col justify-end">
+                            <div className="w-full rounded-t-lg transition-all" style={{ height: `${pct}%`, background: isToday ? '#e67e00' : earned > 0 ? '#fddcb5' : '#f0f0f3' }} />
+                          </div>
                           <p className={`text-[8px] font-bold mt-1.5 ${isToday ? 'text-[#e67e00]' : 'text-gray-400'}`}>{label}</p>
                         </div>
                       )
@@ -345,10 +354,10 @@ const CaptainEarnings = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-bold text-[#1a1c1e] dark:text-gray-100 truncate transition-colors">{rawName || 'Local'} {i % 2 === 0 ? 'Express' : 'Drop'}</p>
-                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">{dateStr} â€¢ {timeStr}</p>
+                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">{dateStr} • {timeStr}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className={`text-[15px] font-black ${isCancel ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-[#1a1c1e] dark:text-gray-100'} transition-colors`}>â‚¹{r.fare?.toFixed(2)}</p>
+                    <p className={`text-[15px] font-black ${isCancel ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-[#1a1c1e] dark:text-gray-100'} transition-colors`}>₹{r.fare?.toFixed(2)}</p>
                     <p className={`text-[8px] font-bold flex items-center justify-end gap-0.5 mt-0.5 ${isCancel ? 'text-red-500 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                       <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: isCancel ? '#ef4444' : '#10b981' }} />
                       {isCancel ? 'CANCELLED' : 'SETTLED'}
@@ -372,7 +381,7 @@ const CaptainEarnings = () => {
             <img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60" alt="Promo" className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-luminosity" />
             <div className="relative z-10">
               <p className="text-white text-lg font-black font-['Manrope'] leading-snug mb-3">Maximize your<br/>velocity this weekend.</p>
-              <button className="flex items-center gap-2 text-[#e67e00] text-xs font-bold uppercase tracking-widest">
+              <button className="flex items-center gap-2 brand-text text-xs font-bold uppercase tracking-widest">
                 Learn More <i className="fa-solid fa-arrow-right text-[10px]" />
               </button>
             </div>
@@ -392,10 +401,10 @@ const CaptainEarnings = () => {
           <p className="text-[9px] font-bold text-gray-400 group-active:text-[#e67e00] transition-colors max-sm:text-[8px]">{t('account.navHistory', 'History')}</p>
         </div>
         <div onClick={() => navigate('/captain/earnings')} className="flex flex-col items-center gap-1 cursor-pointer w-20">
-          <div className="bg-orange-50 dark:bg-orange-500/10 px-4 py-1.5 rounded-full flex flex-col items-center justify-center transition-colors">
-            <i className="fa-solid fa-wallet text-[#e67e00] text-lg" />
+          <div className="brand-btn px-4 py-1.5 rounded-full flex flex-col items-center justify-center transition-colors">
+            <i className="fa-solid fa-wallet brand-text text-lg" />
           </div>
-          <p className="text-[9px] font-bold text-[#e67e00] max-sm:text-[8px] mt-0.5">{t('account.navEarnings', 'Earnings')}</p>
+          <p className="text-[9px] font-bold brand-text max-sm:text-[8px] mt-0.5">{t('account.navEarnings', 'Earnings')}</p>
         </div>
         <div onClick={() => navigate('/captain/account')} className="flex flex-col items-center gap-1 cursor-pointer w-16 group">
           <i className="fa-solid fa-user text-gray-400 group-active:text-[#e67e00] transition-colors text-lg" />

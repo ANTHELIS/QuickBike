@@ -4,6 +4,8 @@ import axios from 'axios'
 import { CaptainDataContext } from '../context/CapatainContext'
 import CaptainDesktopSidebar from '../components/CaptainDesktopSidebar'
 import { useTranslation } from 'react-i18next'
+import { useSiteConfig } from '../context/SiteConfigContext'
+import NotificationDropdown from '../components/NotificationDropdown'
 
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('captain_token')}` })
 
@@ -17,6 +19,7 @@ const CaptainHistory = () => {
   const { captain } = useContext(CaptainDataContext)
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   const [allRides, setAllRides] = useState([])
   const [loading, setLoading] = useState(true)
@@ -95,9 +98,8 @@ const CaptainHistory = () => {
              </div>
 
              <div className="flex items-center gap-5 shrink-0">
-                <div className="relative cursor-pointer hover:bg-gray-200 dark:hover:bg-[#2b2d31] p-2 rounded-full transition-colors hidden sm:block">
-                  <i className="fa-solid fa-bell text-gray-600 dark:text-gray-400 text-lg transition-colors" />
-                  <span className="absolute top-1 right-1.5 w-2.5 h-2.5 bg-[#e67e00] rounded-full border-2 border-[#f2f2f4] dark:border-[#0a0a0c] transition-colors" />
+                <div className="hidden sm:block">
+                  <NotificationDropdown userType="captain" />
                 </div>
                 <div className="cursor-pointer hover:bg-gray-200 dark:hover:bg-[#2b2d31] p-2 rounded-full transition-colors hidden sm:block">
                   <i className="fa-solid fa-circle-question text-gray-600 dark:text-gray-400 text-lg transition-colors" />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import axios from 'axios'
 import { UserDataContext } from '../context/UserContext'
 import UserRidesDesktop from '../components/UserRidesDesktop'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 /* ── helpers ── */
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('user_token')}` })
@@ -82,6 +83,7 @@ const InlineRating = ({ ride, onRated }) => {
 const UserRides = () => {
   const navigate = useNavigate()
   const { user } = useContext(UserDataContext)
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
   useEffect(() => {
@@ -147,23 +149,20 @@ const UserRides = () => {
   }
 
   return (
-    <div className="bg-slate-100 min-h-screen flex justify-center font-['Inter']">
-      <main className="w-full max-w-[390px] min-h-[100dvh] bg-white shadow-xl flex flex-col">
+    <div className="brand-page-bg min-h-screen flex justify-center font-['Inter']">
+      <main className="w-full max-w-[390px] min-h-[100dvh] brand-surface shadow-xl flex flex-col">
 
         {/* ── Sticky Header ── */}
-        <header className="flex items-center gap-4 px-6 pt-12 pb-4 bg-white sticky top-0 z-10 border-b border-gray-100 shadow-sm">
-          <button
-            onClick={() => navigate('/home')}
-            className="p-2 rounded-full hover:bg-orange-50 -ml-2 transition-colors active:scale-90"
-          >
-            <svg className="h-6 w-6 text-slate-800" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <header className="flex items-center gap-4 px-6 pt-12 pb-4 brand-surface sticky top-0 z-10 border-b border-gray-100 shadow-sm">
+          <button onClick={() => navigate('/home')} className="p-2 rounded-full hover:opacity-70 -ml-2 transition-colors active:scale-90">
+            <svg className="h-6 w-6 brand-text-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
           <div className="flex-1">
-            <h1 className="text-xl font-black font-['Manrope'] text-slate-900">Activity</h1>
+            <h1 className="text-xl font-black font-['Manrope'] brand-text-primary">Activity</h1>
             {user && (
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">
+              <p className="text-xs brand-text-muted font-semibold mt-0.5">
                 {user.fullname?.firstname} {user.fullname?.lastname}
               </p>
             )}
@@ -171,7 +170,7 @@ const UserRides = () => {
         </header>
 
         {/* ── Stats Summary Strip ── */}
-        <div className="bg-gradient-to-r from-[#1a0a00] to-[#3d1f00] px-6 py-5">
+        <div className="brand-btn px-6 py-5">
           {statsLoading ? (
             <div className="flex gap-4">
               {[...Array(3)].map((_, i) => (
@@ -187,13 +186,11 @@ const UserRides = () => {
               ].map((s, i) => (
                 <div key={i} className="flex-1 bg-white/10 backdrop-blur rounded-2xl p-3 text-center border border-white/10">
                   <p className="text-lg font-black text-white">{s.value}</p>
-                  <p className="text-[9px] font-bold text-orange-300 uppercase tracking-widest mt-0.5">{s.label}</p>
+                  <p className="text-[9px] font-bold text-white/70 uppercase tracking-widest mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
           )}
-
-          {/* Rating if available */}
           {stats?.rating != null && (
             <div className="flex items-center gap-2 mt-3">
               <div className="flex text-yellow-400 text-xs gap-0.5">
@@ -201,21 +198,21 @@ const UserRides = () => {
                   <i key={n} className={`fa-${Math.round(stats.rating) >= n ? 'solid' : 'regular'} fa-star`} />
                 ))}
               </div>
-              <span className="text-xs font-bold text-orange-200">{stats.rating} avg rating as passenger</span>
+              <span className="text-xs font-bold text-white/80">{stats.rating} avg rating as passenger</span>
             </div>
           )}
         </div>
 
         {/* ── Filter Tabs ── */}
-        <div className="flex gap-1.5 px-5 py-3 bg-white border-b border-gray-100 sticky top-[73px] z-10">
+        <div className="flex gap-1.5 px-5 py-3 brand-surface border-b border-gray-100 sticky top-[73px] z-10">
           {TABS.map(t => (
             <button
               key={t.key}
               onClick={() => { setFilter(t.key); setPage(1) }}
               className={`flex-1 py-2 rounded-full text-xs font-extrabold transition-all ${
                 filter === t.key
-                  ? 'bg-[#E67E00] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  ? 'brand-btn text-white shadow-sm'
+                  : 'bg-gray-100 brand-text-muted hover:opacity-80'
               }`}
             >
               {t.label}
@@ -224,7 +221,7 @@ const UserRides = () => {
         </div>
 
         {/* ── Ride List ── */}
-        <section className="flex-grow overflow-y-auto bg-slate-50 px-5 py-4 pb-24">
+        <section className="flex-grow overflow-y-auto brand-page-bg px-5 py-4 pb-24">
 
           {/* Error */}
           {error && (
@@ -257,7 +254,7 @@ const UserRides = () => {
                 </p>
               </div>
               <button
-                className="mt-2 bg-gradient-to-r from-[#904d00] to-[#E67E00] text-white font-bold px-6 py-3 rounded-full shadow-md active:scale-95 transition-all"
+                className="brand-btn mt-2 text-white font-bold px-6 py-3 rounded-full shadow-md active:scale-95 transition-all"
                 onClick={() => navigate('/home')}
               >
                 Book a Ride
@@ -270,12 +267,12 @@ const UserRides = () => {
                 const canRate = ride.status === 'completed' && !ride.captainRating
 
                 return (
-                  <div key={ride._id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                  <div key={ride._id} className="brand-surface rounded-2xl p-4 shadow-sm border border-gray-100">
 
                     {/* ── Row 1: Date + Status + Fare ── */}
                     <div className="flex justify-between items-start mb-4 pb-3 border-b border-slate-50">
                       <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                        <p className="text-[10px] font-bold brand-text-muted uppercase tracking-widest mb-1.5">
                           {fmtDate(ride.createdAt)}
                         </p>
                         <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${cfg.badge}`}>
@@ -289,7 +286,7 @@ const UserRides = () => {
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-black text-[#A85507]">₹{ride.fare}</p>
+                        <p className="text-xl font-black brand-text">₹{ride.fare}</p>
                         <div className="flex items-center justify-end gap-1 mt-0.5">
                           <i className={`fa-solid ${vehicleIcon(ride.vehicleType)} text-slate-400 text-xs`} />
                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
@@ -302,9 +299,9 @@ const UserRides = () => {
                     {/* ── Row 2: Route Timeline ── */}
                     <div className="flex items-start gap-3">
                       <div className="flex flex-col items-center mt-1.5 shrink-0">
-                        <div className="w-2 h-2 rounded-full bg-orange-500" />
-                        <div className="w-[1.5px] h-6 bg-slate-200 my-0.5" />
-                        <div className="w-2 h-2 rounded-full bg-slate-700" />
+                        <div className="w-2 h-2 rounded-full brand-bg" />
+                        <div className="w-[1.5px] h-6 bg-gray-200 my-0.5" />
+                        <div className="w-2 h-2 rounded-full brand-text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-slate-800 line-clamp-1 mb-2.5">{ride.pickup}</p>
@@ -380,7 +377,7 @@ const UserRides = () => {
         </section>
 
         {/* ── Bottom Nav ── */}
-        <nav className="sticky bottom-0 w-full bg-white/95 backdrop-blur-lg border-t border-slate-100 px-8 py-2.5 flex justify-between items-center z-10 shadow-[0_-1px_10px_rgba(0,0,0,0.04)]">
+        <nav className="sticky bottom-0 w-full brand-surface backdrop-blur-lg border-t border-gray-100 px-8 py-2.5 flex justify-between items-center z-10 shadow-[0_-1px_10px_rgba(0,0,0,0.04)]">
           <button
             className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors"
             onClick={() => navigate('/home')}
@@ -388,7 +385,7 @@ const UserRides = () => {
             <i className="fa-solid fa-motorcycle text-xl" />
             <span className="text-[10px] font-semibold">Ride</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-[#E67E00]">
+          <button className="flex flex-col items-center gap-1 brand-text">
             <i className="fa-solid fa-clock-rotate-left text-xl" />
             <span className="text-[10px] font-bold">Activity</span>
           </button>

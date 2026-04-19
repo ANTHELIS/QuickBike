@@ -9,6 +9,7 @@ import LookingForDriver from '../components/LookingForDriver'
 import WaitingForDriver from '../components/WaitingForDriver'
 import MapPicker from '../components/MapPicker'
 import HomeDesktop from '../components/HomeDesktop'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 const Home = () => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
@@ -44,6 +45,7 @@ const Home = () => {
   const navigate = useNavigate()
   const { socket } = useContext(SocketContext)
   const { user } = useContext(UserDataContext)
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   // Silent auto-fill on mount (fast, low-accuracy) — only if pickup is empty
   useEffect(() => {
@@ -355,7 +357,7 @@ const Home = () => {
           </div>
 
           <button
-            className="w-11 h-11 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform border-2 border-orange-400"
+            className="w-11 h-11 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-md active:scale-90 transition-transform brand-border border-2"
             onClick={() => navigate('/user/account')}
           >
             <i className="fa-solid fa-user text-slate-600 text-base"></i>
@@ -406,7 +408,7 @@ const Home = () => {
 
                 {/* Destination */}
                 <div className="relative">
-                  <div className="absolute left-[17px] top-1/2 -translate-y-1/2 w-3 h-3 bg-orange-500 rounded-sm z-20" />
+                  <div className="absolute left-[17px] top-1/2 -translate-y-1/2 w-3 h-3 brand-bg rounded-sm z-20" />
                   <input
                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-12 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400 transition font-medium text-sm"
                     placeholder="Where are you going?"
@@ -465,7 +467,7 @@ const Home = () => {
                       className="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors"
                       onClick={() => selectSuggestion(s)}
                     >
-                      <div className="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 shrink-0">
+                      <div className="w-9 h-9 brand-surface rounded-full flex items-center justify-center brand-text shrink-0">
                         <i className="fa-solid fa-location-dot text-sm"></i>
                       </div>
                       <span className="font-medium text-slate-700 text-sm leading-tight">{s}</span>
@@ -486,7 +488,7 @@ const Home = () => {
               {/* Find Trip CTA */}
               {pickup && destination && (
                 <button
-                  className="w-full bg-gradient-to-r from-[#904d00] to-[#E67E00] text-white font-extrabold text-base py-4 rounded-full shadow-lg shadow-orange-200 active:scale-95 transition-transform mb-2 disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-full brand-btn text-white font-extrabold text-base py-4 rounded-full shadow-lg active:scale-95 transition-transform mb-2 disabled:opacity-60 flex items-center justify-center gap-2"
                   onClick={findTrip}
                   disabled={fareLoading}
                 >
@@ -586,7 +588,7 @@ const Home = () => {
         {/* ── Bottom Nav ── */}
         {isIdle && !panelOpen && (
           <nav className="absolute bottom-0 w-full bg-white/95 backdrop-blur-lg border-t border-slate-100 px-8 py-2.5 flex justify-between items-center z-30">
-            <button className="flex flex-col items-center gap-1 text-orange-500">
+            <button className="flex flex-col items-center gap-1 brand-text">
               <i className="fa-solid fa-motorcycle text-xl"></i>
               <span className="text-[10px] font-bold">Ride</span>
             </button>
@@ -612,7 +614,7 @@ const Home = () => {
             {/* Drawer */}
             <aside className="absolute left-0 top-0 bottom-0 z-50 w-[80%] max-w-[300px] bg-white flex flex-col shadow-2xl animate-slide-right">
               {/* Drawer Header */}
-              <div className="bg-gradient-to-br from-[#904d00] to-[#E67E00] px-6 pt-14 pb-8">
+              <div className="brand-btn px-6 pt-14 pb-8">
                 <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4 border-2 border-white/40">
                   <i className="fa-solid fa-user text-white text-2xl"></i>
                 </div>
@@ -639,7 +641,7 @@ const Home = () => {
                     className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-orange-50 active:bg-orange-100 transition-colors text-left"
                     onClick={item.action}
                   >
-                    <div className="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 shrink-0">
+                    <div className="w-9 h-9 rounded-full brand-surface flex items-center justify-center brand-text shrink-0">
                       <i className={`fa-solid ${item.icon} text-sm`}></i>
                     </div>
                     <span className="font-semibold text-slate-700">{item.label}</span>

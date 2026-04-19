@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router'
 import axios from 'axios'
 import { CaptainDataContext } from '../context/CapatainContext'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 const CaptainSignup = () => {
   const [firstName, setFirstName] = useState('')
@@ -18,6 +19,7 @@ const CaptainSignup = () => {
 
   const { setCaptain } = useContext(CaptainDataContext)
   const navigate = useNavigate()
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   const submitHandler = async (e) => {
     e.preventDefault()
@@ -50,7 +52,7 @@ const CaptainSignup = () => {
         
         {/* Header */}
         <header className="flex items-center gap-4 px-6 py-4 bg-transparent pt-8 shrink-0">
-          <Link to="/captain-login" className="text-orange-600 hover:bg-orange-50 p-2 rounded-full transition-colors -ml-2">
+          <Link to="/captain-login" className="brand-text hover:opacity-70 p-2 rounded-full transition-colors -ml-2">
             <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -61,7 +63,7 @@ const CaptainSignup = () => {
         <section className="px-6 flex-grow flex flex-col justify-start pb-12 overflow-y-auto">
           
           <div className="mb-8 text-left mt-2">
-            <h1 className="text-3xl font-extrabold text-[#F5820D] font-['Manrope'] mb-2">Become a Captain</h1>
+            <h1 className="text-3xl font-extrabold brand-text font-['Manrope'] mb-2">Become a Captain</h1>
             <p className="text-sm text-gray-500">Register to start earning with QuickBike</p>
           </div>
 
@@ -192,7 +194,7 @@ const CaptainSignup = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#A85300] to-[#F5820D] py-4 rounded-full text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-orange-200 active:scale-95 transition-all mt-6 mb-4 disabled:opacity-70"
+              className="w-full brand-btn py-4 rounded-full text-white font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all mt-6 mb-4 disabled:opacity-70"
             >
               {loading ? (
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -203,7 +205,7 @@ const CaptainSignup = () => {
             <div className="text-center pb-8">
               <p className="text-xs text-gray-600 font-medium">
                 Already registered?{' '}
-                <Link to="/captain-login" className="text-[#A85300] font-bold hover:underline">
+                <Link to="/captain-login" className="brand-text font-bold hover:underline">
                   Sign in
                 </Link>
               </p>

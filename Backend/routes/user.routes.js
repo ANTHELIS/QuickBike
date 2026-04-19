@@ -61,6 +61,10 @@ router.post('/wallet/topup', authMiddleware.authUser, asyncHandler(userControlle
 // ── Payment History ──
 router.get('/payment-history', authMiddleware.authUser, asyncHandler(userController.getPaymentHistory));
 
+// ── Notifications ──
+router.get('/notifications', authMiddleware.authUser, asyncHandler(userController.getNotifications));
+router.patch('/notifications/read-all', authMiddleware.authUser, asyncHandler(userController.markAllNotificationsRead));
+
 // ── Payment Methods (UPI / Card) ──
 router.post('/payment-methods', authMiddleware.authUser, asyncHandler(userController.addPaymentMethod));
 router.delete('/payment-methods/:methodId', authMiddleware.authUser, asyncHandler(userController.deletePaymentMethod));

@@ -7,17 +7,20 @@ import UserContext from './context/UserContext.jsx'
 import CaptainContext from './context/CapatainContext.jsx'
 import SocketProvider from './context/SocketContext.jsx'
 import CaptainSettingsProvider from './context/CaptainSettingsContext.jsx'
+import { SiteConfigProvider } from './context/SiteConfigContext.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <CaptainSettingsProvider>
-    <CaptainContext>
-      <UserContext>
-        <SocketProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </SocketProvider>
-      </UserContext>
-    </CaptainContext>
-  </CaptainSettingsProvider>
+  <SiteConfigProvider>
+    <CaptainSettingsProvider>
+      <CaptainContext>
+        <UserContext>
+          <SocketProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </SocketProvider>
+        </UserContext>
+      </CaptainContext>
+    </CaptainSettingsProvider>
+  </SiteConfigProvider>
 )

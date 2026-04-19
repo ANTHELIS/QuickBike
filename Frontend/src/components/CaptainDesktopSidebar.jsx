@@ -51,7 +51,11 @@ const CaptainDesktopSidebar = () => {
       <div className="p-4 lg:p-6 border-t border-slate-50 dark:border-[#2b2d31] transition-colors">
         <div className="flex flex-col lg:flex-row items-center gap-4 mb-4">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 shrink-0 select-none flex items-center justify-center transition-colors">
-            <i className="fa-solid fa-user text-slate-500 dark:text-slate-400 transition-colors" />
+            {captain?.profilePicture?.url ? (
+              <img src={captain.profilePicture.url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <i className="fa-solid fa-user text-slate-500 dark:text-slate-400 transition-colors" />
+            )}
           </div>
           <div className="hidden lg:block">
             <h2 className="text-sm font-bold text-slate-800 dark:text-gray-100 line-clamp-1 transition-colors">

@@ -5,10 +5,12 @@ import FinishRide from '../components/FinishRide'
 import { SocketContext } from '../context/SocketContext'
 import { CaptainDataContext } from '../context/CapatainContext'
 import CaptainDesktopSidebar from '../components/CaptainDesktopSidebar'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 const CaptainRiding = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { getBanner } = useSiteConfig() // triggers CSS injection
   
   // Use state or local state
   const [ride, setRide] = useState(location.state?.ride || null)
@@ -113,7 +115,7 @@ const CaptainRiding = () => {
           <div className="flex items-center gap-3">
              <span className="font-bold text-slate-800 dark:text-gray-100 transition-colors">Active Ride</span>
              <span className="text-slate-300 dark:text-slate-600 transition-colors">/</span>
-             <span className="font-bold text-orange-500 dark:text-orange-400 transition-colors">Trip #{ride?._id?.substring(0,6).toUpperCase() || '4829'}</span>
+             <span className="font-bold brand-text dark:text-orange-400 transition-colors">Trip #{ride?._id?.substring(0,6).toUpperCase() || '4829'}</span>
           </div>
           <div className="flex items-center gap-4">
              <button className="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"><i className="fa-solid fa-bell text-lg" /></button>
@@ -167,7 +169,7 @@ const CaptainRiding = () => {
                     <div className="flex items-center gap-4">
                        <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-[#1f2125] flex items-center justify-center relative shadow-sm border border-slate-50 dark:border-[#2b2d31] transition-colors">
                          <i className="fa-solid fa-user text-slate-400 dark:text-gray-500 text-xl" />
-                         <div className="absolute -bottom-2 bg-orange-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md border-2 border-white dark:border-[#161719] transition-colors">
+                         <div className="absolute -bottom-2 brand-bg text-white text-[9px] font-black px-1.5 py-0.5 rounded-md border-2 border-white dark:border-[#161719] transition-colors">
                             {ride?.user?.ratings?.average || '4.9'} ★
                          </div>
                        </div>
@@ -193,7 +195,7 @@ const CaptainRiding = () => {
                     <div className="absolute left-8 md:left-2 top-3 bottom-5 w-px border-l-2 border-dashed border-slate-200 dark:border-[#2b2d31] transition-colors" />
                     
                     <div className="flex items-start gap-4 mb-6 relative">
-                       <div className="w-4 h-4 rounded-full bg-orange-500 flex items-center justify-center shadow-[0_0_0_4px_white] dark:shadow-[0_0_0_4px_#161719] z-10 mt-1 shrink-0 transition-colors">
+                       <div className="w-4 h-4 rounded-full brand-bg flex items-center justify-center shadow-[0_0_0_4px_white] dark:shadow-[0_0_0_4px_#161719] z-10 mt-1 shrink-0 transition-colors">
                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
                        </div>
                        <div>
@@ -242,7 +244,7 @@ const CaptainRiding = () => {
                          <p className="text-[10px] font-black tracking-widest text-slate-400 dark:text-gray-500 uppercase mb-1 transition-colors">Estimated Fare</p>
                          <h2 className="text-3xl font-black font-['Manrope'] text-slate-900 dark:text-gray-100 tracking-tight transition-colors">₹{ride?.fare}</h2>
                        </div>
-                       <div className="bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors">
+                       <div className="brand-surface brand-text px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors">
                          {ride?.payment?.method === 'wallet' ? 'Wallet payment' : 'Cash payment'}
                        </div>
                     </div>
@@ -251,7 +253,7 @@ const CaptainRiding = () => {
                       className="relative w-full bg-slate-900 hover:bg-black py-4 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-xl shadow-slate-900/20 active:scale-95 transition-all overflow-hidden"
                       onClick={() => setFinishRidePanel(true)}
                     >
-                      <div className="absolute left-2 top-2 bottom-2 w-12 bg-orange-500 rounded-xl flex items-center justify-center hidden md:flex">
+                      <div className="absolute left-2 top-2 bottom-2 w-12 brand-bg rounded-xl flex items-center justify-center hidden md:flex">
                          <i className="fa-solid fa-chevron-right text-white" />
                       </div>
                       <span className="md:ml-[40px]">Complete Ride</span>

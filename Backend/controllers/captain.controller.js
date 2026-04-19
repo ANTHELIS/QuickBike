@@ -173,3 +173,33 @@ module.exports.uploadVehicleImage = async (req, res) => {
 
     res.status(200).json({ captain, vehicleImageUrl: url });
 };
+
+// ─────────────────────────────────────────────────
+// GET /captains/notifications  — get captain notifications
+// ─────────────────────────────────────────────────
+module.exports.getNotifications = async (req, res) => {
+    const notificationModel = require('../models/notification.model');
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+
+    const notifications = await notificationModel
+        .find({ recipient: req.captain._id })
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean();
+
+    res.status(200).json({ data: notifications });
+};
+
+// ─────────────────────────────────────────────────
+// PATCH /captains/notifications/read-all
+// ─────────────────────────────────────────────────
+module.exports.markAllNotificationsRead = async (req, res) => {
+    const notificationModel = require('../models/notification.model');
+    await notificationModel.updateMany(
+        { recipient: req.captain._id, status: { $ne: 'read' } },
+        { $set: { status: 'read', readAt: new Date() } }
+    );
+    res.status(200).json({ success: true, message: 'All notifications marked as read' });
+};

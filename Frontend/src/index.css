@@ -98,6 +98,24 @@ body {
   --duration-slow: 400ms;
 }
 
+/* ── Dynamic Brand Color Bridge ────────────────────────────────
+   When SiteConfigContext sets --color-* on :root, these cascade
+   into the existing design token system automatically.
+   ─────────────────────────────────────────────────────────── */
+:root {
+  /* Route brand → design tokens so ALL CSS components respond */
+  --primary:            var(--color-primary,    #904d00);
+  --primary-container:  var(--color-secondary,  #E67E00);
+  --surface:            var(--color-surface,     #fff8f5);
+  --on-surface:         var(--color-text,        #231a12);
+  --on-surface-variant: var(--color-muted,       #554335);
+
+  /* Body / page background */
+  --surface-container-lowest: var(--color-surface,    #ffffff);
+  --surface-container-low:    color-mix(in srgb, var(--color-background, #fff1e9) 100%, transparent);
+  --surface-container:        color-mix(in srgb, var(--color-background, #feeade) 100%, transparent);
+}
+
 /* ── Dark Mode Tokens (captain) ───────────────── */
 /* ── Premium Deep Dark Mode (Captain App) ───────────────── */
 html.dark {
@@ -173,7 +191,7 @@ html, body, * {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+  background: linear-gradient(135deg, var(--color-primary, var(--primary)) 0%, var(--color-secondary, var(--primary-container)) 100%);
   color: var(--on-primary);
   padding: 16px 32px;
   border-radius: var(--radius-xl);

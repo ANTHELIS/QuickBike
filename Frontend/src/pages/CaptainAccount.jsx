@@ -5,6 +5,8 @@ import { CaptainDataContext } from '../context/CapatainContext'
 import CaptainDesktopSidebar from '../components/CaptainDesktopSidebar'
 import { useCaptainSettings } from '../context/CaptainSettingsContext'
 import { useTranslation } from 'react-i18next'
+import { useSiteConfig } from '../context/SiteConfigContext'
+import NotificationDropdown from '../components/NotificationDropdown'
 
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('captain_token')}` })
 
@@ -13,6 +15,7 @@ const CaptainAccount = () => {
   const { t } = useTranslation()
   const { captain, setCaptain } = useContext(CaptainDataContext)
   const { darkMode, toggleDark, language, setLanguage, currentLang, LANGUAGES } = useCaptainSettings()
+  const { getBanner } = useSiteConfig() // triggers CSS injection
   const [showLangModal, setShowLangModal] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
   
@@ -172,7 +175,7 @@ const CaptainAccount = () => {
                   <div className="flex items-center justify-between xl:justify-start w-full mb-6 lg:mb-8 border-b border-gray-200 dark:border-[#2b2d31] pb-4 transition-colors">
                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest transition-colors">{t('account.management')}</p>
                      <div className="flex items-center gap-4 xl:absolute xl:right-0 xl:top-0">
-                        <i className="fa-solid fa-bell text-gray-600 dark:text-gray-400 text-lg hover:text-[#1a1c1e] dark:hover:text-gray-200 cursor-pointer transition-colors" />
+                        <NotificationDropdown userType="captain" />
                         <i className="fa-solid fa-circle-user text-gray-600 dark:text-gray-400 text-xl hover:text-[#1a1c1e] dark:hover:text-gray-200 cursor-pointer transition-colors" />
                      </div>
                   </div>

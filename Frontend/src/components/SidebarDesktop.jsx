@@ -45,7 +45,11 @@ const SidebarDesktop = ({ user, navigate }) => {
 
       <div className="p-6 border-t border-[#1e1e1e] flex items-center justify-center lg:justify-start gap-4 hover:bg-[#1a1a1a] transition-colors cursor-pointer" onClick={() => navigate('/user/account')}>
         <div className="w-10 h-10 rounded-md bg-[#2ea6a4] flex items-center justify-center overflow-hidden shrink-0 shadow-none relative">
-          <img src="https://i.pravatar.cc/100?img=47" alt="Profile" className="w-full h-full object-cover opacity-90" />
+          {user?.profilePicture?.url ? (
+            <img src={user.profilePicture.url} alt="Profile" className="w-full h-full object-cover opacity-90" />
+          ) : (
+            <i className="fa-solid fa-user text-white/70" />
+          )}
         </div>
         <div className="hidden lg:block overflow-hidden flex-1 text-left">
           <p className="text-[13px] font-bold text-white truncate">

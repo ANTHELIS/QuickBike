@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CaptainDataContext } from '../context/CapatainContext'
 import CaptainDesktopSidebar from '../components/CaptainDesktopSidebar'
+import { useSiteConfig } from '../context/SiteConfigContext'
 
 const FAQS = [
   { q: 'How is my weekly payout calculated?', a: 'Your weekly payout is calculated based on completed rides, minus QuickBike commission, plus any earned bonuses or tips. Payouts are processed every Monday.', icon: 'fa-indian-rupee-sign', color: 'bg-green-50 text-green-600' },
@@ -15,6 +16,7 @@ const CaptainHelp = () => {
   const navigate = useNavigate()
   const { captain } = useContext(CaptainDataContext)
   const [activeFaq, setActiveFaq] = useState(null)
+  const { getBanner } = useSiteConfig() // triggers CSS injection
 
   return (
     <div className="text-slate-900 font-['Inter'] relative w-full max-w-full" style={{overflowX:'hidden'}}>
@@ -25,7 +27,7 @@ const CaptainHelp = () => {
         <main className="flex-1 h-[100dvh] flex flex-col overflow-y-auto relative px-12 py-10">
           <div className="w-full max-w-4xl mx-auto flex flex-col hide-scrollbar relative">
             <header className="mb-8 pt-8 md:pt-0 relative">
-              <h3 className="text-xs font-bold text-[#e67e00] uppercase tracking-widest mb-1 z-10 relative">Captain Support</h3>
+              <h3 className="text-xs font-bold brand-text uppercase tracking-widest mb-1 z-10 relative">Captain Support</h3>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1a1c1e] dark:text-gray-100 font-['Manrope'] tracking-tight z-10 relative transition-colors">Help Center</h1>
             </header>
 
@@ -62,7 +64,7 @@ const CaptainHelp = () => {
               <div className="space-y-4 sticky top-4">
                 <div className="bg-white dark:bg-[#161719] rounded-3xl p-6 shadow-sm border border-transparent dark:border-[#2b2d31] relative overflow-hidden group hover:shadow-md transition-all cursor-pointer">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 dark:bg-orange-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-orange-100 dark:group-hover:bg-orange-500/20 transition-colors" />
-                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-500/20 text-[#e67e00] dark:text-orange-400 rounded-2xl flex items-center justify-center mb-4 relative z-10 transition-colors">
+                  <div className="w-12 h-12 brand-surface brand-text rounded-2xl flex items-center justify-center mb-4 relative z-10 transition-colors">
                     <i className="fa-solid fa-phone text-xl" />
                   </div>
                   <h3 className="text-lg font-bold text-[#1a1c1e] dark:text-gray-100 mb-1 relative z-10 transition-colors">Call Support</h3>
@@ -110,7 +112,7 @@ const CaptainHelp = () => {
           
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button className="bg-white dark:bg-[#161719] hover:bg-gray-50 dark:hover:bg-[#2b2d31] border border-transparent dark:border-[#2b2d31] transition-colors rounded-[24px] p-5 flex flex-col items-center justify-center gap-2 shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-none active:scale-[0.98]">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-[#e67e00] flex items-center justify-center transition-colors">
+              <div className="w-12 h-12 rounded-2xl brand-surface brand-text flex items-center justify-center transition-colors">
                 <i className="fa-solid fa-phone text-lg"></i>
               </div>
               <span className="text-sm font-bold text-[#1a1c1e] dark:text-gray-100 mt-1 transition-colors">Call Hub</span>

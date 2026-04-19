@@ -41,6 +41,8 @@ import AdminUsers from './pages/admin/AdminUsers'
 import AdminWallet from './pages/admin/AdminWallet'
 import AdminPromos from './pages/admin/AdminPromos'
 import AdminSupport from './pages/admin/AdminSupport'
+import AdminSiteConfig from './pages/admin/AdminSiteConfig'
+import AdminNotifications from './pages/admin/AdminNotifications'
 
 const App = () => {
   return (
@@ -93,6 +95,8 @@ const App = () => {
           <Route path='wallet' element={<AdminWallet />} />
           <Route path='promos' element={<AdminPromos />} />
           <Route path='support' element={<AdminSupport />} />
+          <Route path='site-config' element={<AdminSiteConfig />} />
+          <Route path='notifications' element={<AdminNotifications />} />
         </Route>
       </Routes>
     </div>

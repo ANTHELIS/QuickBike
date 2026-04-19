@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import NotificationDropdown from './NotificationDropdown';
 
 const HeaderDesktop = ({ title = '', subtitle = '', showSearch = true, user }) => {
   // Derive icon state from the actual DOM class — no stale React state
@@ -75,14 +76,13 @@ const HeaderDesktop = ({ title = '', subtitle = '', showSearch = true, user }) =
             <i className={`fa-solid ${isDark ? 'fa-sun text-yellow-500 hover:text-yellow-400' : 'fa-moon text-indigo-500 hover:text-indigo-600'} text-[18px] transition-all duration-300 transform group-hover:scale-110`}></i>
          </button>
 
-         <div className="relative cursor-pointer">
-            <i className="fa-solid fa-bell text-gray-400 dark:text-[#888] hover:text-gray-800 dark:hover:text-white text-[18px] transition-colors"></i>
-            <div className="absolute top-0 right-0 w-[6px] h-[6px] bg-[#e85d04] rounded-full border border-white dark:border-[#111]"></div>
-         </div>
+         <NotificationDropdown userType={user?.role || (window.location.pathname.includes('captain') ? 'captain' : 'user')} />
          
          <div className="flex items-center gap-3 cursor-pointer group">
             <div className="w-10 h-10 rounded-[10px] bg-slate-200 dark:bg-slate-800 border border-gray-300 dark:border-[#333] flex items-center justify-center overflow-hidden shadow-sm">
-               {user ? (
+               {user?.profilePicture?.url ? (
+                 <img src={user.profilePicture.url} alt="Profile" className="w-full h-full object-cover" />
+               ) : user ? (
                  <span className="text-[15px] font-bold text-gray-700 dark:text-gray-200 uppercase">
                    {(user.fullname?.firstname?.[0] || '') + (user.fullname?.lastname?.[0] || '')}
                  </span>
@@ -94,7 +94,6 @@ const HeaderDesktop = ({ title = '', subtitle = '', showSearch = true, user }) =
                <span className="text-[14px] text-gray-800 dark:text-gray-200 font-medium">
                  {user ? `${user.fullname?.firstname || ''} ${user.fullname?.lastname || ''}`.trim() : 'Loading...'}
                </span>
-               <i className="fa-solid fa-chevron-down text-[10px] text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-colors"></i>
             </div>
          </div>
       </div>
