@@ -27,9 +27,11 @@ if (isProduction) {
         'REDIS_URL',
         'JWT_REFRESH_SECRET',
         'ADMIN_JWT_SECRET',
-        'RAZORPAY_KEY_ID',
-        'RAZORPAY_KEY_SECRET',
-        'RAZORPAY_WEBHOOK_SECRET',
+        // Razorpay keys are only needed when payments are enabled.
+        // Uncomment these when you're ready to accept payments:
+        // 'RAZORPAY_KEY_ID',
+        // 'RAZORPAY_KEY_SECRET',
+        // 'RAZORPAY_WEBHOOK_SECRET',
     ];
     const prodMissing = prodRequired.filter((key) => !process.env[key]);
     if (prodMissing.length > 0) {
