@@ -150,6 +150,21 @@ const HomeDesktop = ({
           <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Stay at your pickup location</p>
         </div>
 
+        {/* OTP / PIN — Share this with your captain to start the ride */}
+        {ride?.otp && (
+          <div className="w-full bg-orange-50 dark:bg-[#2a1a08] border border-orange-200 dark:border-orange-900/50 rounded-[12px] p-4 mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-black text-[#E67E00] dark:text-orange-400 uppercase tracking-widest mb-0.5">Your Ride PIN</p>
+              <p className="text-[10px] text-orange-700/70 dark:text-orange-300/60">Share with captain to start ride</p>
+            </div>
+            <div className="bg-white dark:bg-[#1a1a1a] border-2 border-orange-300 dark:border-orange-700 rounded-xl px-5 py-2 text-center shadow-sm">
+              <span className="text-[28px] font-black text-[#E67E00] dark:text-orange-400 tracking-[0.15em] font-['Manrope']">
+                {ride.otp}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Captain vehicle card */}
         {ride?.captain?.vehicle && (
           <div className="w-full bg-gray-50 dark:bg-[#1a1a1a] rounded-[12px] px-4 py-3 mb-4 border border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
