@@ -47,10 +47,27 @@ app.use(hpp()); // HTTP Parameter Pollution protection
 
 app.use(
     cors({
-        origin: config.cors.origins.includes('*') ? true : config.cors.origins,
+        // Strip trailing slashes — common mistake when setting env vars
+        origin: (origin, callback) => {
+            const allowed = config.cors.origins.map(o => o.replace(/\/$/, ''));
+            if (!origin || allowed.includes('*') || allowed.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error(`CORS: origin '${origin}' not allowed`));
+            }
+        },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'X-Request-ID',
+            'Cache-Control',
+            'Pragma',
+            'X-Requested-With',
+        ],
+        exposedHeaders: ['X-Request-ID'],
+        maxAge: 86400, // cache preflight for 24h — reduces OPTIONS requests
     })
 );
 
