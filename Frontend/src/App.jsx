@@ -1,52 +1,67 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router'
+
+// ── Shared loading fallback ──
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
+    <div className="flex flex-col items-center gap-4">
+      <img src="/logo.png" alt="QuickBike" className="h-16 w-auto animate-pulse" />
+      <div className="w-8 h-8 border-3 border-[#F5820D]/30 border-t-[#F5820D] rounded-full animate-spin" />
+    </div>
+  </div>
+)
+
+// ── Eagerly loaded (critical path — user sees these first) ──
 import Start from './pages/Start'
 import UserLogin from './pages/UserLogin'
 import UserSignup from './pages/UserSignup'
-import Captainlogin from './pages/Captainlogin'
-import Home from './pages/Home'
 import UserProtectWrapper from './pages/UserProtectWrapper'
-import UserLogout from './pages/UserLogout'
-import CaptainHome from './pages/CaptainHome'
 import CaptainProtectWrapper from './pages/CaptainProtectWrapper'
-import CaptainLogout from './pages/CaptainLogout'
-import Riding from './pages/Riding'
-import CaptainRiding from './pages/CaptainRiding'
-import UserRides from './pages/UserRides'
-import UserAccount from './pages/UserAccount'
-import UserPayment from './pages/UserPayment'
-import UserHelp from './pages/UserHelp'
-import UserSafety from './pages/UserSafety'
-import UserOffers from './pages/UserOffers'
-import CaptainAccount from './pages/CaptainAccount'
-import CaptainEarnings from './pages/CaptainEarnings'
-import CaptainHistory from './pages/CaptainHistory'
-import CaptainHelp from './pages/CaptainHelp'
+
+// ── Lazy loaded (loaded on demand when navigated to) ──
+const Captainlogin = lazy(() => import('./pages/Captainlogin'))
+const Home = lazy(() => import('./pages/Home'))
+const UserLogout = lazy(() => import('./pages/UserLogout'))
+const CaptainHome = lazy(() => import('./pages/CaptainHome'))
+const CaptainLogout = lazy(() => import('./pages/CaptainLogout'))
+const Riding = lazy(() => import('./pages/Riding'))
+const CaptainRiding = lazy(() => import('./pages/CaptainRiding'))
+const UserRides = lazy(() => import('./pages/UserRides'))
+const UserAccount = lazy(() => import('./pages/UserAccount'))
+const UserPayment = lazy(() => import('./pages/UserPayment'))
+const UserHelp = lazy(() => import('./pages/UserHelp'))
+const UserSafety = lazy(() => import('./pages/UserSafety'))
+const UserOffers = lazy(() => import('./pages/UserOffers'))
+const CaptainAccount = lazy(() => import('./pages/CaptainAccount'))
+const CaptainEarnings = lazy(() => import('./pages/CaptainEarnings'))
+const CaptainHistory = lazy(() => import('./pages/CaptainHistory'))
+const CaptainHelp = lazy(() => import('./pages/CaptainHelp'))
 
 // KYC Flow (captain)
-import KycLanding from './pages/captain-kyc/KycLanding'
-import KycStep1 from './pages/captain-kyc/KycStep1'
-import KycStep2 from './pages/captain-kyc/KycStep2'
-import KycStep3 from './pages/captain-kyc/KycStep3'
-import KycStep4 from './pages/captain-kyc/KycStep4'
-import KycPending from './pages/captain-kyc/KycPending'
+const KycLanding = lazy(() => import('./pages/captain-kyc/KycLanding'))
+const KycStep1 = lazy(() => import('./pages/captain-kyc/KycStep1'))
+const KycStep2 = lazy(() => import('./pages/captain-kyc/KycStep2'))
+const KycStep3 = lazy(() => import('./pages/captain-kyc/KycStep3'))
+const KycStep4 = lazy(() => import('./pages/captain-kyc/KycStep4'))
+const KycPending = lazy(() => import('./pages/captain-kyc/KycPending'))
 
 // Admin Panel
-import AdminLogin from './pages/admin/AdminLogin'
-import AdminDashboard, { AdminLayout } from './pages/admin/AdminDashboard'
-import KycList from './pages/admin/KycList'
-import KycDetail from './pages/admin/KycDetail'
-import AdminCaptains from './pages/admin/AdminCaptains'
-import AdminUsers from './pages/admin/AdminUsers'
-import AdminWallet from './pages/admin/AdminWallet'
-import AdminPromos from './pages/admin/AdminPromos'
-import AdminSupport from './pages/admin/AdminSupport'
-import AdminSiteConfig from './pages/admin/AdminSiteConfig'
-import AdminNotifications from './pages/admin/AdminNotifications'
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.default })))
+const AdminLayout = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminLayout })))
+const KycList = lazy(() => import('./pages/admin/KycList'))
+const KycDetail = lazy(() => import('./pages/admin/KycDetail'))
+const AdminCaptains = lazy(() => import('./pages/admin/AdminCaptains'))
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'))
+const AdminWallet = lazy(() => import('./pages/admin/AdminWallet'))
+const AdminPromos = lazy(() => import('./pages/admin/AdminPromos'))
+const AdminSupport = lazy(() => import('./pages/admin/AdminSupport'))
+const AdminSiteConfig = lazy(() => import('./pages/admin/AdminSiteConfig'))
+const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'))
 
 const App = () => {
   return (
-    <div>
+    <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Public */}
         <Route path='/' element={<Start />} />
@@ -99,7 +114,7 @@ const App = () => {
           <Route path='notifications' element={<AdminNotifications />} />
         </Route>
       </Routes>
-    </div>
+    </Suspense>
   )
 }
 

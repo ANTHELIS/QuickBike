@@ -17,9 +17,9 @@ const CaptainDesktopSidebar = () => {
 
   return (
     <aside className="hidden md:flex lg:w-80 md:w-20 bg-white dark:bg-[#161719] border-r border-slate-100 dark:border-[#2b2d31] flex-col h-full z-10 shrink-0 transition-colors duration-300">
-      <div className="p-6 border-b border-slate-50 dark:border-[#2b2d31] flex items-center justify-center lg:justify-between transition-colors">
+      <div className="p-6 border-b border-slate-50 dark:border-[#2b2d31] flex items-center justify-center lg:justify-start gap-4 transition-colors">
+        <img src="/logo.png" alt="QuickBike" className="h-12 w-auto object-contain drop-shadow-sm" />
         <h1 className="text-xl font-bold font-['Manrope'] tracking-tight text-[#1a1c1e] dark:text-gray-100 hidden lg:block transition-colors">QuickBike</h1>
-        <i className="fa-solid fa-bolt text-[#e67e00] text-xl lg:hidden" />
       </div>
       
       <nav className="flex-1 px-2 py-6 space-y-2 lg:px-4 lg:space-y-1">

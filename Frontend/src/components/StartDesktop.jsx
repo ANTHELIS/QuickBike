@@ -49,7 +49,8 @@ const StartDesktop = ({ navigate }) => {
       <div className="flex-1 lg:max-w-[600px] w-full flex flex-col bg-white shadow-[-20px_0_40px_rgba(0,0,0,0.05)] z-20 relative">
         
         {/* Mobile Logo Header */}
-        <div className="lg:hidden p-8 pb-0 flex items-center justify-center">
+        <div className="lg:hidden p-8 pb-0 flex items-center justify-center gap-2">
+            <img src="/logo.png" alt="QuickBike" className="h-12 w-auto object-contain drop-shadow" />
             <h1 className="text-3xl font-black text-gray-900 font-['Manrope'] tracking-tight">
               Quick<span className="text-[#e85d04]">Bike</span>
             </h1>

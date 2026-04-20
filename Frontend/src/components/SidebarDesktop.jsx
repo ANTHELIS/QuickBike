@@ -13,9 +13,9 @@ const SidebarDesktop = ({ user, navigate }) => {
 
   return (
     <aside className="w-[80px] lg:w-[260px] flex flex-col bg-[#141414] border-r border-[#1e1e1e] shrink-0 z-50 transition-all duration-300">
-      <div className="p-4 lg:p-8 mb-4 flex justify-center lg:justify-start cursor-pointer transition-transform hover:scale-105" onClick={() => navigate('/home')}>
+      <div className="p-4 lg:p-8 mb-4 flex items-center justify-center lg:justify-start gap-4 cursor-pointer transition-transform hover:scale-105" onClick={() => navigate('/home')}>
+        <img src="/logo.png" alt="QuickBike" className="h-12 w-auto object-contain drop-shadow-md" />
         <h1 className="hidden lg:block text-2xl font-bold text-[#f57b0f] tracking-tight">Quick<span className="text-white">Bike</span></h1>
-        <i className="fa-solid fa-motorcycle text-[#f57b0f] text-3xl lg:hidden mt-2"></i>
       </div>
       
       <nav className="flex-1 mt-2 space-y-1">

@@ -35,9 +35,7 @@ const AdminLogin = () => {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-2xl shadow-2xl shadow-orange-500/30 mb-4">
-            <i className="fa-solid fa-bolt text-white text-2xl" />
-          </div>
+          <img src="/logo.png" alt="QuickBike" className="h-28 mx-auto mb-4 object-contain drop-shadow-xl" />
           <h1 className="text-3xl font-black text-white">QuickBike</h1>
           <p className="text-slate-400 text-sm mt-1 font-medium">
             Admin Control Panel

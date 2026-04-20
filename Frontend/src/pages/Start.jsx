@@ -60,12 +60,7 @@ const Start = () => {
         {/* Header - Ensure relative z-50 to stay above the hero margin overlap */}
         <header className="flex items-center justify-between py-8 w-full relative z-50">
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 group-hover:shadow-[0_8px_30px_rgba(245,130,13,0.15)] transition-all duration-300">
-              <svg width="24" height="24" viewBox="0 0 36 36" fill="none">
-                <path d="M18 3L30 12V27L18 33L6 27V12L18 3Z" fill="#F5820D" fillOpacity="0.2" />
-                <path d="M18 10L24 14V22L18 26L12 22V14L18 10Z" fill="#F5820D" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="QuickBike" className="h-20 w-auto object-contain drop-shadow-sm group-hover:scale-105 transition-all duration-300" />
             <span className="text-gray-900 font-extrabold text-2xl tracking-tighter italic">QuickBike</span>
           </div>
           

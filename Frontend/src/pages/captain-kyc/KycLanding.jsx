@@ -52,7 +52,10 @@ const KycLanding = () => {
         <Link to="/captain-login" className="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm">
           <i className="fa-solid fa-arrow-left text-slate-700 text-sm" />
         </Link>
-        <span className="text-orange-500 font-extrabold text-sm">QuickBike Driver</span>
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="QuickBike" className="h-10 w-auto object-contain" />
+          <span className="text-orange-500 font-extrabold text-sm">QuickBike</span>
+        </div>
         <div className="w-9" />
       </header>
 
@@ -63,8 +66,8 @@ const KycLanding = () => {
             <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
             OPEN FOR REGISTRATION
           </div>
-          <h1 className="text-3xl font-black text-slate-900 leading-tight">
-            Become a <span className="text-[#C85A00]">QuickBike</span> Rider
+          <h1 className="text-3xl font-black text-slate-900 leading-tight flex items-center gap-2 flex-wrap">
+            Become a <img src="/logo.png" alt="QuickBike" className="h-14 w-auto object-contain" /> <span className="text-[#C85A00]">QuickBike</span> Rider
           </h1>
           <p className="text-slate-500 text-sm mt-2 leading-relaxed">
             Fill in your details to get started. Document verification happens next.

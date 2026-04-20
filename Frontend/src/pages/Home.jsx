@@ -349,10 +349,7 @@ const Home = () => {
           </button>
 
           <div className="flex bg-white/95 backdrop-blur-md px-4 py-2 rounded-full shadow-md items-center gap-2">
-            <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
-              <path d="M18 3L30 12V27L18 33L6 27V12L18 3Z" fill="#E67E00" />
-              <path d="M18 10L24 14V22L18 26L12 22V14L18 10Z" fill="white" />
-            </svg>
+            <img src="/logo.png" alt="QuickBike" className="h-10 w-auto object-contain" />
             <span className="font-bold text-sm text-slate-800">QuickBike</span>
           </div>
 

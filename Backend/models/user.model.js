@@ -139,8 +139,8 @@ const userSchema = new mongoose.Schema(
 );
 
 // ── Indexes ──
-// email already has unique:true inline
-userSchema.index({ phone: 1 }, { sparse: true });
+// email already has unique:true inline → auto-indexed
+// phone already has unique:true inline → auto-indexed
 // status already has index:true inline
 
 // ── Instance Methods ──

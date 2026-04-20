@@ -32,9 +32,7 @@ export const AdminLayout = ({ children }) => {
   const SidebarContent = () => (
     <>
       <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-800">
-        <div className="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center shrink-0">
-          <i className="fa-solid fa-bolt text-white text-base" />
-        </div>
+        <img src="/logo.png" alt="QuickBike" className="h-12 w-auto object-contain drop-shadow" />
         <div>
           <p className="font-black text-white text-sm">QuickBike</p>
           <p className="text-slate-500 text-[10px] font-semibold">
@@ -114,9 +112,7 @@ export const AdminLayout = ({ children }) => {
             <i className="fa-solid fa-bars text-lg" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center">
-              <i className="fa-solid fa-bolt text-white text-xs" />
-            </div>
+            <img src="/logo.png" alt="QuickBike" className="h-10 w-auto object-contain" />
             <span className="font-black text-white text-sm">
               QuickBike Admin
             </span>
