@@ -15,9 +15,9 @@ const mongoose = require('mongoose');
 const config = require('../config');
 
 async function main() {
-    const name     = process.env.ADMIN_NAME     || 'QuickBike Admin';
-    const email    = process.env.ADMIN_EMAIL    || 'admin@quickbike.in';
-    const password = process.env.ADMIN_PASSWORD || 'Admin@123456';
+    const name     = process.env.ADMIN_NAME     || 'Mithu Paul';
+    const email    = process.env.ADMIN_EMAIL    || 'admin@admin.com';
+    const password = process.env.ADMIN_PASSWORD || 'mithu@admin';
     const role     = process.env.ADMIN_ROLE     || 'super_admin';
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
